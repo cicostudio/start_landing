@@ -72,33 +72,48 @@
   var track_ = $('#case-track'), slides = $$('.case'), dots = $$('.case-dot');
   if (track_ && slides.length) {
     var cur = 0, prog = 0, visible = false, DUR = 5000, TICK = 100, timer = null;
-    function startSlide(s, fromTap) {
-      var vs = $$('video', s), btn = $('.case-play', s), failed = false, n = 0;
-      vs.forEach(function (v) {
-        if (!v.getAttribute('src')) { v.src = v.getAttribute('data-src'); v.load(); }
-        v.muted = true; v.defaultMuted = true; v.playsInline = true;
-        v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
-        try { v.currentTime = 0; } catch (e) {}
-        var p = v.play();
-        if (p && p.then) p.then(function () {
-          if (++n === vs.length && btn) btn.hidden = true;
-        }).catch(function () {
-          if (!failed) { failed = true; if (btn) btn.hidden = false; }
-        });
+    // Videos first; if the phone refuses to play them (iOS Low Power Mode, data saver…),
+    // swap every case to an animated WebP, which always animates.
+    var useAnim = false;
+    function toAnim(s) {
+      $$('video', s).forEach(function (v) {
+        var img = document.createElement('img');
+        img.src = v.getAttribute('data-anim'); img.alt = ''; img.setAttribute('aria-hidden', 'true');
+        img.style.cssText = v.style.cssText;
+        v.pause(); v.replaceWith(img);
       });
-      if (fromTap) track('case_play', { case_id: s.getAttribute('data-case') });
+    }
+    function fallbackAll() {
+      if (useAnim) return; useAnim = true;
+      slides.forEach(toAnim);
+      track('case_video_fallback', {});
+    }
+    function startSlide(s) {
+      if (useAnim) { toAnim(s); return; }
+      var vs = $$('video', s);
+      vs.forEach(function (v) {
+        if (!v.getAttribute('src')) {
+          v.muted = true; v.defaultMuted = true; v.playsInline = true;
+          v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
+          v.addEventListener('error', fallbackAll);
+          v.src = v.getAttribute('data-src');
+        }
+        if (v.paused) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+      });
+      // watchdog: still not moving after 2.5 s → fallback
+      var t0 = vs.map(function (v) { return v.currentTime; });
+      setTimeout(function () {
+        if (useAnim || !visible || slides[cur] !== s) return;
+        var stuck = vs.some(function (v, k) { return v.paused || v.currentTime === t0[k]; });
+        if (stuck) fallbackAll();
+      }, 2500);
     }
     function playVideos(i) {
       slides.forEach(function (s, k) {
-        if (k === i && visible) startSlide(s, false);
+        if (k === i && visible) startSlide(s);
         else $$('video', s).forEach(function (v) { v.pause(); });
       });
     }
-    // autoplay blocked (iOS Low Power Mode etc.) → a tap starts both videos
-    slides.forEach(function (s) {
-      var btn = $('.case-play', s);
-      if (btn) btn.addEventListener('click', function (e) { e.stopPropagation(); startSlide(s, true); });
-    });
     function paint() {
       track_.style.transform = 'translateX(' + (-cur * 100) + '%)';
       dots.forEach(function (d, k) {
@@ -174,7 +189,7 @@
     box.style.cssText = 'position:fixed;top:8px;left:8px;right:8px;z-index:99;padding:10px;border-radius:10px;background:rgba(0,0,0,.8);color:#fff;font:12px/1.5 monospace;white-space:pre-wrap';
     document.body.appendChild(box);
     setInterval(function () {
-      var vids = $$('#case-track video').map(function (v) { return (v.getAttribute('src') ? 'S' : '-') + (v.paused ? 'p' : 'P') + v.readyState; }).join(' ');
+      var vids = $$('#case-track video').map(function (v) { return (v.getAttribute('src') ? 'S' : '-') + (v.paused ? 'p' : 'P') + v.readyState + '@' + v.currentTime.toFixed(1); }).join(' ') + ' anim-imgs:' + $$('#case-track img').length;
       box.textContent = 'reduce-motion: ' + reduce + '\nhidden: ' + document.hidden +
         '\nhero: ' + hs.map(function (h) { return h.className.replace('hero-slide', '').trim() || '-'; }).join(',') +
         '\ncase: ' + (typeof cur !== 'undefined' ? cur : '?') + ' visible: ' + (typeof visible !== 'undefined' ? visible : '?') +
