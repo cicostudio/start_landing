@@ -43,7 +43,7 @@
 
   // ---- hero slideshow ------------------------------------------------------------
   var hs = $$('.hero-slide');
-  if (hs.length > 1 && !reduce) {
+  if (hs.length > 1) {   // reduced motion: cross-fade only (no zoom, via CSS)
     var hi = 0, HOLD = 6000;
     hs.forEach(function (img, k) { if (k) img.loading = 'eager'; });
     setInterval(function () {
@@ -111,7 +111,7 @@
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (es) { visible = es[0].isIntersecting; playVideos(cur); }, { threshold: 0.35 }).observe(track_.parentElement);
     } else { visible = true; }
-    if (!reduce) timer = setInterval(tick, TICK);
+    timer = setInterval(tick, TICK);   // reduced motion: slides change without the sliding transition (CSS)
     paint();
   }
 
@@ -152,4 +152,18 @@
     var h = document.documentElement, pct = (h.scrollTop + innerHeight) / h.scrollHeight * 100;
     marks.forEach(function (m) { if (pct >= m && !hitm[m]) { hitm[m] = 1; track('scroll_depth', { percent: m }); } });
   }, { passive: true });
+
+  // ---- ?debug=1 : on-screen diagnostics for checking a phone ---------------------
+  if (/[?&]debug=1/.test(location.search)) {
+    var box = document.createElement('div');
+    box.style.cssText = 'position:fixed;top:8px;left:8px;right:8px;z-index:99;padding:10px;border-radius:10px;background:rgba(0,0,0,.8);color:#fff;font:12px/1.5 monospace;white-space:pre-wrap';
+    document.body.appendChild(box);
+    setInterval(function () {
+      var vids = $$('#case-track video').map(function (v) { return (v.getAttribute('src') ? 'S' : '-') + (v.paused ? 'p' : 'P') + v.readyState; }).join(' ');
+      box.textContent = 'reduce-motion: ' + reduce + '\nhidden: ' + document.hidden +
+        '\nhero: ' + hs.map(function (h) { return h.className.replace('hero-slide', '').trim() || '-'; }).join(',') +
+        '\ncase: ' + (typeof cur !== 'undefined' ? cur : '?') + ' visible: ' + (typeof visible !== 'undefined' ? visible : '?') +
+        '\nvideos: ' + vids + '\nUA: ' + navigator.userAgent.slice(0, 90);
+    }, 500);
+  }
 })();
