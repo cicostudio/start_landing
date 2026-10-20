@@ -72,48 +72,6 @@
   var track_ = $('#case-track'), slides = $$('.case'), dots = $$('.case-dot');
   if (track_ && slides.length) {
     var cur = 0, prog = 0, visible = false, DUR = 5000, TICK = 100, timer = null;
-    // Videos first; if the phone refuses to play them (iOS Low Power Mode, data saver…),
-    // swap every case to an animated WebP, which always animates.
-    var useAnim = false;
-    function toAnim(s) {
-      $$('video', s).forEach(function (v) {
-        var img = document.createElement('img');
-        img.src = v.getAttribute('data-anim'); img.alt = ''; img.setAttribute('aria-hidden', 'true');
-        img.style.cssText = v.style.cssText;
-        v.pause(); v.replaceWith(img);
-      });
-    }
-    function fallbackAll() {
-      if (useAnim) return; useAnim = true;
-      slides.forEach(toAnim);
-      track('case_video_fallback', {});
-    }
-    function startSlide(s) {
-      if (useAnim) { toAnim(s); return; }
-      var vs = $$('video', s);
-      vs.forEach(function (v) {
-        if (!v.getAttribute('src')) {
-          v.muted = true; v.defaultMuted = true; v.playsInline = true;
-          v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
-          v.addEventListener('error', fallbackAll);
-          v.src = v.getAttribute('data-src');
-        }
-        if (v.paused) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
-      });
-      // watchdog: still not moving after 2.5 s → fallback
-      var t0 = vs.map(function (v) { return v.currentTime; });
-      setTimeout(function () {
-        if (useAnim || !visible || slides[cur] !== s) return;
-        var stuck = vs.some(function (v, k) { return v.paused || v.currentTime === t0[k]; });
-        if (stuck) fallbackAll();
-      }, 2500);
-    }
-    function playVideos(i) {
-      slides.forEach(function (s, k) {
-        if (k === i && visible) startSlide(s);
-        else $$('video', s).forEach(function (v) { v.pause(); });
-      });
-    }
     function paint() {
       track_.style.transform = 'translateX(' + (-cur * 100) + '%)';
       dots.forEach(function (d, k) {
@@ -122,7 +80,7 @@
       });
     }
     function go(i, byUser) {
-      cur = (i + slides.length) % slides.length; prog = 0; paint(); playVideos(cur);
+      cur = (i + slides.length) % slides.length; prog = 0; paint();
       if (byUser) track('case_view', { case_id: slides[cur].getAttribute('data-case'), case_index: cur + 1 });
     }
     function tick() {
@@ -139,7 +97,7 @@
       if (Math.abs(dx) > 40) go(cur + (dx < 0 ? 1 : -1), true);
     });
     if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (es) { visible = es[0].isIntersecting; playVideos(cur); }, { threshold: 0.35 }).observe(track_.parentElement);
+      new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }, { threshold: 0.35 }).observe(track_.parentElement);
     } else { visible = true; }
     timer = setInterval(tick, TICK);   // reduced motion: slides change without the sliding transition (CSS)
     paint();
@@ -189,7 +147,7 @@
     box.style.cssText = 'position:fixed;top:8px;left:8px;right:8px;z-index:99;padding:10px;border-radius:10px;background:rgba(0,0,0,.8);color:#fff;font:12px/1.5 monospace;white-space:pre-wrap';
     document.body.appendChild(box);
     setInterval(function () {
-      var vids = $$('#case-track video').map(function (v) { return (v.getAttribute('src') ? 'S' : '-') + (v.paused ? 'p' : 'P') + v.readyState + '@' + v.currentTime.toFixed(1); }).join(' ') + ' anim-imgs:' + $$('#case-track img').length;
+      var vids = $$('#case-track img').filter(function (m) { return m.complete && m.naturalWidth; }).length + ' / ' + $$('#case-track img').length + ' loaded (' + ($$('#case-track img')[0] ? $$('#case-track img')[0].currentSrc.split('/').pop() : '') + ')';
       box.textContent = 'reduce-motion: ' + reduce + '\nhidden: ' + document.hidden +
         '\nhero: ' + hs.map(function (h) { return h.className.replace('hero-slide', '').trim() || '-'; }).join(',') +
         '\ncase: ' + (typeof cur !== 'undefined' ? cur : '?') + ' visible: ' + (typeof visible !== 'undefined' ? visible : '?') +

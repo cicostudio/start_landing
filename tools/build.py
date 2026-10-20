@@ -28,10 +28,11 @@ def load(lang):
 def r_cases(c):
     out = []
     for i, k in enumerate([x for x in c['cases'] if x.get('visible', True)]):
+        # Animated AVIF (WebP fallback): always animates, even where phones block video autoplay
         vid = lambda side: (
-            f'<video data-src="assets/media/{k["id"]}-{side}.mp4" data-anim="assets/media/{k["id"]}-{side}.webp" poster="assets/media/{k["id"]}-{side}.jpg" '
-            f'muted loop playsinline preload="none" aria-hidden="true" '
-            f'style="width: 100%; height: 100%; object-fit: cover; display: block"></video>')
+            f'<picture><source type="image/avif" srcset="assets/media/{k["id"]}-{side}.avif">'
+            f'<img src="assets/media/{k["id"]}-{side}.webp" alt="" aria-hidden="true" loading="{"eager" if i == 0 else "lazy"}" decoding="async" '
+            f'style="width: 100%; height: 100%; object-fit: cover; display: block"></picture>')
         tag = lambda bg, lab, when, left: (
             f'<span style="position: absolute; left: {left}; top: 12px; display: flex; align-items: center; gap: 6px; '
             f'padding: 3px 10px; border-radius: 999px; background: {bg}; font-size: 12px; font-weight: 700">{lab}'
@@ -177,7 +178,7 @@ def version_assets(text):
             return m.group(0)
         h = hashlib.sha1(open(f, 'rb').read()).hexdigest()[:8]
         return f'{m.group(1)}{path}?v={h}'
-    return re.sub(r'((?:src|href|poster|data-src|data-anim)="|og:image" content="[^"]*?/)(assets/[^"?#]+)', sub, text)
+    return re.sub(r'((?:src|srcset|href|poster|data-src|data-anim)="|og:image" content="[^"]*?/)(assets/[^"?#]+)', sub, text)
 
 
 def build(lang='zh'):
