@@ -1,0 +1,16 @@
+/* Global layer on top of the inline-styled design template */
+*,*::before,*::after{box-sizing:border-box}
+html{background:#E9E6E0;-webkit-text-size-adjust:100%}
+body{margin:0;font-family:'Noto Sans','Noto Sans TC',system-ui,sans-serif;color:#2C2B28}
+a{color:#2C2B28;text-decoration:none}
+button{font:inherit;cursor:pointer}
+img,video{max-width:100%}
+img.kb{max-width:none}
+.page{max-width:480px;margin:0 auto;background:#F5F4F1;padding-bottom:96px;font-family:inherit}
+section[data-section="hero"]{height:clamp(620px,100svh,820px)!important}
+section[data-section="closing"]{height:clamp(560px,90svh,844px)!important}
+.sticky{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;z-index:20;background:rgba(245,244,241,.96);border-top:1px solid #E4E0D7;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transform:translateY(110%);transition:transform .3s ease}
+.sticky.on{transform:none}
+:focus-visible{outline:3px solid #2F6B55;outline-offset:2px;border-radius:6px}
+#case-track{touch-action:pan-y}
+@media (prefers-reduced-motion: reduce){.anim,.kb{animation:none!important;transition:none!important}.sticky{transition:none}}

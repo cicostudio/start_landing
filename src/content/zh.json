@@ -1,0 +1,123 @@
+{
+  "meta": {
+    "lang": "zh-Hant",
+    "site_url": "https://start-landing.pages.dev",
+    "path": "/",
+    "indexable": false,
+    "title": "一對一結構調整｜凝聚運動顧問",
+    "description": "痛會回來，是因為原因還在。凝聚的一對一結構調整 × 功能整合，先找出源頭、調整到位，再練到它留得住。台北／板橋兩間門市，首次體驗 120 分鐘 NT$1,999。",
+    "og_image": "assets/img/flow-2.jpg",
+    "page_id": "one-on-one-zh"
+  },
+  "tracking": {
+    "ga4": "G-55G78H5BPG",
+    "meta_pixel": "800186701890749",
+    "line_tag": "da896487-a669-425e-be02-3dc3afbd3638"
+  },
+  "links": {
+    "booking_url": "https://liff.line.me/2001467446-KNVd49W2",
+    "line_url": "https://lin.ee/Z3YM7gV",
+    "hub_url": "https://portaly.cc/cicostudio",
+    "group_url": "https://portaly.cc/cicostudio",
+    "cert_url": "https://portaly.cc/cicostudio"
+  },
+  "images": {
+    "hero_image": "flow-2.jpg",
+    "closing_image": "flow-1.jpg"
+  },
+  "price": {
+    "first": "1,999",
+    "regular": "5,000",
+    "reschedule": "免費改期"
+  },
+  "cases": [
+    {
+      "id": "case01",
+      "spot": "腳踝",
+      "feel": "不適",
+      "source": "脊椎空間",
+      "caption": "全馬跑者・16 次後（9 個月），全馬完賽破 PB",
+      "before_label": "第 1 次",
+      "after_label": "第 16 次",
+      "media": "video",
+      "visible": true
+    },
+    {
+      "id": "case02",
+      "spot": "右肩",
+      "feel": "疼痛",
+      "source": "右肋筋膜",
+      "caption": "HYROX 選手・1 次調整，訓練無痛上強度",
+      "before_label": "第 1 次",
+      "after_label": "當天",
+      "media": "video",
+      "visible": true
+    },
+    {
+      "id": "case03",
+      "spot": "膝蓋",
+      "feel": "卡頓",
+      "source": "脊椎鎖死",
+      "caption": "上班族・1 次調整，出國狂走都不累",
+      "before_label": "第 1 次",
+      "after_label": "當天",
+      "media": "video",
+      "visible": true
+    }
+  ],
+  "stores": [
+    {
+      "name": "台北旗艦店",
+      "lines": [
+        [
+          "板南線",
+          "#0070BD",
+          "#FFFFFF"
+        ]
+      ],
+      "station": "善導寺站 6 號出口",
+      "walk": "步行 8 分鐘",
+      "map_url": "https://maps.app.goo.gl/Krt4iJGSLNFcKaqJA",
+      "city": "台北市"
+    },
+    {
+      "name": "板橋創始店",
+      "lines": [
+        [
+          "板南線",
+          "#0070BD",
+          "#FFFFFF"
+        ],
+        [
+          "環狀線",
+          "#FFDB00",
+          "#2C2B28"
+        ]
+      ],
+      "station": "新埔站 3 號出口",
+      "walk": "步行 2 分鐘",
+      "map_url": "https://maps.app.goo.gl/pUZz4HPXpt5n4fYy9",
+      "city": "新北市板橋區"
+    }
+  ],
+  "faq": [
+    {
+      "q": "調整會痛嗎？跟傳統的整骨推拿一樣嗎？",
+      "a": "怕痛也能安心體驗！\n\n凝聚的結構調整採用柔性手法\n結合運動科學實證方法論，\n不僅安全有效，而且溫和放鬆。\n\n結構思維，是順應身體自然排列\n用不激起本體防衛的漸進方式\n為身體結構撐開空間、乖乖歸位。"
+    },
+    {
+      "q": "我平常有在按摩，還需要做結構調整嗎？",
+      "a": "這取決於你的需求。\n\n如果只是想「短暫放鬆」疲勞\n自己滾滾筒或一般按摩就足夠。\n\n但如果「同一處總是反覆痠痛」\n那代表骨架結構或發力已經歪了。\n\n讓凝聚從結構幫您找出根本原因\n打破反覆緊繃的惡性循環。"
+    },
+    {
+      "q": "「結構訓練」是像健身房一樣的重訓嗎？",
+      "a": "跟重訓完全不一樣！\n\n當身體結構調整歸位後\n如果不改變過往錯誤的動作慣性\n剛理順的骨架很快又會被拉歪。\n\n透過精準的「結構功能整合訓練」\n引導腦神經系統重新學習發力。\n\n這不是為了練壯\n而是為了喚醒沉睡的肌肉\n讓身體記住新的、正確的使用軌跡！"
+    },
+    {
+      "q": "大概需要來幾次凝聚，才會感覺到效果？",
+      "a": "第一次，就有感輕盈！\n\n大多數人「第一次」體驗後\n就能感受變輕盈、更靈活！\n\n若要改變長年問題——\n建議初期安排每週一次調整\n最快一個月就能有感好轉。\n\n體驗後，訓練師會協助評估\n你的身體狀況與運動目標\n規劃最適合的專屬週期計劃。"
+    }
+  ],
+  "trainers": [],
+  "testimonial": null
+}
