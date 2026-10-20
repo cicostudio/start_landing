@@ -41,6 +41,19 @@
     }).observe(heroCta);
   } else if (sticky) sticky.classList.add('on');
 
+  // ---- hero slideshow ------------------------------------------------------------
+  var hs = $$('.hero-slide');
+  if (hs.length > 1 && !reduce) {
+    var hi = 0, HOLD = 6000;
+    hs.forEach(function (img, k) { if (k) img.loading = 'eager'; });
+    setInterval(function () {
+      if (document.hidden) return;
+      var prev = hs[hi]; hi = (hi + 1) % hs.length; var next = hs[hi];
+      next.classList.remove('off'); void next.offsetWidth; next.classList.add('on');
+      prev.classList.remove('on'); prev.classList.add('off');
+    }, HOLD);
+  }
+
   // ---- bubble wall pause ---------------------------------------------------
   var wall = $('#wall'), wb = $('#wall-toggle');
   if (wall && wb) {
@@ -63,8 +76,10 @@
       slides.forEach(function (s, k) {
         $$('video', s).forEach(function (v) {
           if (k === i && visible) {
-            if (!v.src) v.src = v.getAttribute('data-src');
-            v.currentTime = 0; var p = v.play(); if (p && p.catch) p.catch(function () {});
+            if (!v.getAttribute('src')) { v.src = v.getAttribute('data-src'); v.load(); }
+            v.muted = true;
+            try { v.currentTime = 0; } catch (e) {}
+            var p = v.play(); if (p && p.catch) p.catch(function () {});
           } else v.pause();
         });
       });
@@ -94,7 +109,7 @@
       if (Math.abs(dx) > 40) go(cur + (dx < 0 ? 1 : -1), true);
     });
     if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (es) { visible = es[0].isIntersecting; playVideos(cur); }, { threshold: 0.35 }).observe(track_);
+      new IntersectionObserver(function (es) { visible = es[0].isIntersecting; playVideos(cur); }, { threshold: 0.35 }).observe(track_.parentElement);
     } else { visible = true; }
     if (!reduce) timer = setInterval(tick, TICK);
     paint();

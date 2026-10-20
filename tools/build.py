@@ -147,12 +147,20 @@ def r_head(c):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="assets/img/{c['images']['hero_image']}" fetchpriority="high">
+<link rel="preload" as="image" href="assets/img/{c['images']['hero_images'][0]}" fetchpriority="high">
 <link rel="stylesheet" href="assets/site.css">
 <script>window.SITE={json.dumps(cfg)};</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id={t['ga4']}"></script>
 <script src="assets/track.js"></script>
 <script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>'''
+
+
+def r_hero_slides(c):
+    imgs = c['images']['hero_images']
+    return ''.join(
+        f'<img class="hero-slide{" on" if i == 0 else ""}" src="assets/img/{esc(f)}" alt=""'
+        + (' fetchpriority="high"' if i == 0 else ' loading="lazy"') + '>'
+        for i, f in enumerate(imgs))
 
 
 def r_foot(c):
@@ -164,10 +172,10 @@ def build(lang='zh'):
     vals = {
         'head': r_head(c), 'foot': r_foot(c),
         'cases': r_cases(c), 'case_dots': r_case_dots(c), 'faq': r_faq(c), 'stores': r_stores(c),
-        'trainers': r_trainers(c), 'testimonial': r_testimonial(c),
+        'trainers': r_trainers(c), 'hero_slides': r_hero_slides(c), 'testimonial': r_testimonial(c),
         'price_regular': esc(c['price']['regular']), 'reschedule': esc(c['price']['reschedule']),
         **{k: esc(v) for k, v in c['links'].items()},
-        **{k: esc(v) for k, v in c['images'].items()},
+        **{k: esc(v) for k, v in c['images'].items() if isinstance(v, str)},
     }
     out = re.sub(r'<!--@(\w+)-->', lambda m: vals[m.group(1)], tpl)
     left = re.findall(r'<!--@\w+-->', out)

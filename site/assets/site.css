@@ -5,7 +5,6 @@ body{margin:0;font-family:'Noto Sans','Noto Sans TC',system-ui,sans-serif;color:
 a{color:#2C2B28;text-decoration:none}
 button{font:inherit;cursor:pointer}
 img,video{max-width:100%}
-img.kb{max-width:none}
 .page{max-width:480px;margin:0 auto;background:#F5F4F1;padding-bottom:96px;font-family:inherit}
 section[data-section="hero"]{height:clamp(620px,100svh,820px)!important}
 section[data-section="closing"]{height:clamp(560px,90svh,844px)!important}
@@ -14,3 +13,10 @@ section[data-section="closing"]{height:clamp(560px,90svh,844px)!important}
 :focus-visible{outline:3px solid #2F6B55;outline-offset:2px;border-radius:6px}
 #case-track{touch-action:pan-y}
 @media (prefers-reduced-motion: reduce){.anim,.kb{animation:none!important;transition:none!important}.sticky{transition:none}}
+/* hero slideshow: each photo slowly zooms out, then cross-fades to the next */
+.hero-slides{position:absolute;inset:0;overflow:hidden}
+.hero-slide{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 40%;opacity:0;transform:scale(1.18);transition:opacity 1.4s ease}
+.hero-slide.on{opacity:1;animation:heroZoom 7.4s ease-out forwards}
+.hero-slide.off{opacity:0;transform:scale(1)}
+@keyframes heroZoom{from{transform:scale(1.18)}to{transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){.hero-slide{transition:none}.hero-slide.on{animation:none;transform:none}}

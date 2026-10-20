@@ -18,11 +18,15 @@
     "booking_url": "https://liff.line.me/2001467446-KNVd49W2",
     "line_url": "https://lin.ee/Z3YM7gV",
     "hub_url": "https://portaly.cc/cicostudio",
-    "group_url": "https://portaly.cc/cicostudio",
-    "cert_url": "https://portaly.cc/cicostudio"
+    "group_url": "https://cico.pse.is/cs26gc",
+    "cert_url": "https://cico.pse.is/26c00"
   },
   "images": {
-    "hero_image": "flow-2.jpg",
+    "hero_images": [
+      "flow-2.jpg",
+      "flow-1.jpg",
+      "flow-3.jpg"
+    ],
     "closing_image": "flow-1.jpg"
   },
   "price": {
