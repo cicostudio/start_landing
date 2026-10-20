@@ -72,18 +72,33 @@
   var track_ = $('#case-track'), slides = $$('.case'), dots = $$('.case-dot');
   if (track_ && slides.length) {
     var cur = 0, prog = 0, visible = false, DUR = 5000, TICK = 100, timer = null;
-    function playVideos(i) {
-      slides.forEach(function (s, k) {
-        $$('video', s).forEach(function (v) {
-          if (k === i && visible) {
-            if (!v.getAttribute('src')) { v.src = v.getAttribute('data-src'); v.load(); }
-            v.muted = true;
-            try { v.currentTime = 0; } catch (e) {}
-            var p = v.play(); if (p && p.catch) p.catch(function () {});
-          } else v.pause();
+    function startSlide(s, fromTap) {
+      var vs = $$('video', s), btn = $('.case-play', s), failed = false, n = 0;
+      vs.forEach(function (v) {
+        if (!v.getAttribute('src')) { v.src = v.getAttribute('data-src'); v.load(); }
+        v.muted = true; v.defaultMuted = true; v.playsInline = true;
+        v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
+        try { v.currentTime = 0; } catch (e) {}
+        var p = v.play();
+        if (p && p.then) p.then(function () {
+          if (++n === vs.length && btn) btn.hidden = true;
+        }).catch(function () {
+          if (!failed) { failed = true; if (btn) btn.hidden = false; }
         });
       });
+      if (fromTap) track('case_play', { case_id: s.getAttribute('data-case') });
     }
+    function playVideos(i) {
+      slides.forEach(function (s, k) {
+        if (k === i && visible) startSlide(s, false);
+        else $$('video', s).forEach(function (v) { v.pause(); });
+      });
+    }
+    // autoplay blocked (iOS Low Power Mode etc.) → a tap starts both videos
+    slides.forEach(function (s) {
+      var btn = $('.case-play', s);
+      if (btn) btn.addEventListener('click', function (e) { e.stopPropagation(); startSlide(s, true); });
+    });
     function paint() {
       track_.style.transform = 'translateX(' + (-cur * 100) + '%)';
       dots.forEach(function (d, k) {

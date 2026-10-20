@@ -44,6 +44,7 @@ def r_cases(c):
           {tag('rgba(28,27,25,0.6)', '前', k['before_label'], '10px')}
           {tag('rgba(47,107,85,0.92)', '後', k['after_label'], 'calc(50% + 9px)')}
           <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 50%; background: linear-gradient(180deg, rgba(28,27,25,0) 0%, rgba(28,27,25,0.9) 72%)"></div>
+          <button type="button" class="case-play" hidden aria-label="播放前後對照影片" style="position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 20px; border: 0; border-radius: 24px; background: rgba(245,244,241,0.94); color: #2C2B28; font-size: 15px; font-weight: 700; box-shadow: 0 6px 20px rgba(0,0,0,0.25)"><span aria-hidden="true">▶</span>播放前後對照</button>
           <div style="position: absolute; left: 20px; right: 20px; bottom: 20px">
             <div style="font-size: 30px; font-weight: 900; line-height: 1.2">{title}</div>
             <div style="font-size: 14px; color: #E4E0D7; margin-top: 10px; line-height: 1.5">{esc(k["caption"])}</div>
