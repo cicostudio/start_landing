@@ -7,6 +7,7 @@ The template holds the approved design; every piece that changes over time
 so edits never touch layout code. A future admin can write the same JSON (or D1)
 and reuse these renderers.
 """
+import hashlib
 import html
 import json
 import os
@@ -167,6 +168,18 @@ def r_foot(c):
     return '<script src="assets/app.js" defer></script>\n</body>\n</html>\n'
 
 
+def version_assets(text):
+    """Append ?v=<content hash> to every local asset URL so browsers never keep a stale copy."""
+    def sub(m):
+        path = m.group(2)
+        f = os.path.join(ROOT, 'site', path)
+        if not os.path.isfile(f):
+            return m.group(0)
+        h = hashlib.sha1(open(f, 'rb').read()).hexdigest()[:8]
+        return f'{m.group(1)}{path}?v={h}'
+    return re.sub(r'((?:src|href|poster|data-src)="|og:image" content="[^"]*?/)(assets/[^"?#]+)', sub, text)
+
+
 def build(lang='zh'):
     tpl, c = load(lang)
     vals = {
@@ -178,6 +191,7 @@ def build(lang='zh'):
         **{k: esc(v) for k, v in c['images'].items() if isinstance(v, str)},
     }
     out = re.sub(r'<!--@(\w+)-->', lambda m: vals[m.group(1)], tpl)
+    out = version_assets(out)
     left = re.findall(r'<!--@\w+-->', out)
     assert not left, left
     os.makedirs(os.path.join(ROOT, 'site'), exist_ok=True)
