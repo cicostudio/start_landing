@@ -24,7 +24,7 @@ tools/build.py         ← template + content → site/index.html
 
 - Framework preset：None
 - Build command：（留空）
-- Build output directory：`site`
+- Build output directory：`site`（頁面在 `site/one/`，網址 cico.tw/one/）
 
 ## 追蹤事件（GA4 事件名稱 → Meta / LINE）
 

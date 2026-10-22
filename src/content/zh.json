@@ -1,9 +1,9 @@
 {
   "meta": {
     "lang": "zh-Hant",
-    "site_url": "https://start-landing.nameless-wood-bba1.workers.dev",
-    "path": "/",
-    "indexable": false,
+    "site_url": "https://cico.tw",
+    "path": "/one/",
+    "indexable": true,
     "title": "一對一結構調整｜凝聚運動顧問",
     "description": "痛會回來，是因為原因還在。凝聚的一對一結構調整 × 功能整合，先找出源頭、調整到位，再練到它留得住。台北／板橋兩間門市，首次體驗 120 分鐘 NT$1,999。",
     "og_image": "assets/img/flow-2.jpg",

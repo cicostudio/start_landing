@@ -122,7 +122,7 @@ def r_testimonial(c):
 def r_head(c):
     m, t = c['meta'], c['tracking']
     url = m['site_url'].rstrip('/') + m['path']
-    og = m['site_url'].rstrip('/') + '/' + m['og_image']
+    og = url + m['og_image']
     robots = '' if m.get('indexable') else '<meta name="robots" content="noindex">\n'
     ld = {
         '@context': 'https://schema.org',
@@ -182,7 +182,7 @@ def version_assets(text):
     """Append ?v=<content hash> to every local asset URL so browsers never keep a stale copy."""
     def sub(m):
         path = m.group(2)
-        f = os.path.join(ROOT, 'site', path)
+        f = os.path.join(ROOT, 'site', 'one', path)
         if not os.path.isfile(f):
             return m.group(0)
         h = hashlib.sha1(open(f, 'rb').read()).hexdigest()[:8]
@@ -204,8 +204,8 @@ def build(lang='zh'):
     out = version_assets(out)
     left = re.findall(r'<!--@\w+-->', out)
     assert not left, left
-    os.makedirs(os.path.join(ROOT, 'site'), exist_ok=True)
-    name = 'index.html' if lang == 'zh' else f'{lang}/index.html'
+    name = 'one/index.html' if lang == 'zh' else f'{lang}/one/index.html'
+    os.makedirs(os.path.dirname(os.path.join(ROOT, 'site', name)), exist_ok=True)
     open(os.path.join(ROOT, 'site', name), 'w', encoding='utf-8').write(out)
     print('built site/' + name, len(out), 'bytes')
 
