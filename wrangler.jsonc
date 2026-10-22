@@ -1,0 +1,9 @@
+{
+  // 純靜態網站：Cloudflare Worker 直接提供 site/ 資料夾
+  "name": "start-landing",
+  "compatibility_date": "2025-06-01",
+  "assets": {
+    "directory": "./site",
+    "html_handling": "auto-trailing-slash"
+  }
+}
