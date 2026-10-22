@@ -22,3 +22,4 @@ section[data-section="closing"]{height:clamp(560px,90svh,844px)!important}
 /* reduced motion: keep the slow zoom-out but with a smaller range */
 @keyframes heroZoomSoft{from{transform:scale(1.08)}to{transform:scale(1)}}
 @media (prefers-reduced-motion: reduce){.hero-slide{transform:scale(1.08)}.hero-slide.on{animation:heroZoomSoft 7.4s ease-out forwards!important}}
+.voices{scrollbar-width:none}.voices::-webkit-scrollbar{display:none}

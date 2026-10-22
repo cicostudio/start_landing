@@ -123,5 +123,24 @@
     }
   ],
   "trainers": [],
-  "testimonial": null
+  "testimonials": [
+    {
+      "quote": "修正髖關節緊繃，讓跑步不再是我的弱項",
+      "name": "潘子易",
+      "role": "亞運鐵人三項國手",
+      "photo": "voice-01.jpg"
+    },
+    {
+      "quote": "跑動效率大幅提高，賽事尾段還能再追越",
+      "name": "江典祐",
+      "role": "亞運鐵人三項國手",
+      "photo": "voice-02.jpg"
+    },
+    {
+      "quote": "凝聚的結構觀念，幫助我保持在最佳狀態",
+      "name": "楊博智",
+      "role": "CT226 男子總冠軍",
+      "photo": "voice-03.jpg"
+    }
+  ]
 }
