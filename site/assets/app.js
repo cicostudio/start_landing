@@ -13,12 +13,14 @@
     u.searchParams.set('lp', S.page);
     u.searchParams.set('cta', loc);
     if (A.vid) u.searchParams.set('vid', A.vid);
+    if (A.gcid) u.searchParams.set('gcid', A.gcid);
     return u.toString();
   }
   $$('[data-cta]').forEach(function (a) {
     var loc = a.getAttribute('data-cta');
     a.href = bookingUrl(loc);
     a.addEventListener('click', function () {
+      a.href = bookingUrl(loc);   // refresh: GA client id may have arrived after load
       track('booking_click', { cta_location: loc }, { meta: 'Lead', line: 'BookingClick' });
     });
   });

@@ -23,6 +23,8 @@
   window.dataLayer = window.dataLayer || [];
   window.gtag = function () { dataLayer.push(arguments); };
   if (S.ga4) { gtag('js', new Date()); gtag('config', S.ga4, { page_type: S.page }); }
+  // GA4 client id → passed to LIFF so both pages count as the same visitor
+  if (S.ga4) gtag('get', S.ga4, 'client_id', function (id) { if (id) window.NJ_ATTR.gcid = id; });
 
   // ---- Meta Pixel --------------------------------------------------------
   if (S.pixel) {
