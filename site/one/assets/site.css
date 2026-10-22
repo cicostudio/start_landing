@@ -22,4 +22,11 @@ section[data-section="closing"]{height:clamp(560px,90svh,844px)!important}
 /* reduced motion: keep the slow zoom-out but with a smaller range */
 @keyframes heroZoomSoft{from{transform:scale(1.08)}to{transform:scale(1)}}
 @media (prefers-reduced-motion: reduce){.hero-slide{transform:scale(1.08)}.hero-slide.on{animation:heroZoomSoft 7.4s ease-out forwards!important}}
-.voices{scrollbar-width:none}.voices::-webkit-scrollbar{display:none}
+.voice-av{padding:0;border:0;background:transparent;border-radius:50%;opacity:.45;transform:scale(.82);transition:transform .35s ease,opacity .35s ease}
+.voice-av img{width:84px;height:84px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 0 3px #ECE4D3,0 0 0 5px transparent;transition:box-shadow .35s ease}
+.voice-av[aria-pressed="true"]{opacity:1;transform:none}
+.voice-av[aria-pressed="true"] img{box-shadow:0 0 0 3px #ECE4D3,0 0 0 5px #9C7A4B}
+.voice-av:hover{opacity:.85}
+.voice-q{animation:voiceIn .4s ease}
+@keyframes voiceIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.voice-av,.voice-av img{transition:none}.voice-q{animation:none}}

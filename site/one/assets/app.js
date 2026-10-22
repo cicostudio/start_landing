@@ -105,6 +105,21 @@
     paint();
   }
 
+  // ---- testimonials: tap an avatar to switch; auto-rotates while on screen ----
+  var vAvs = $$('.voice-av'), vQs = $$('.voice-q');
+  if (vAvs.length > 1) {
+    var vi = 0, vHold = false, vVis = false;
+    function vShow(k, byUser) {
+      vi = (k + vAvs.length) % vAvs.length;
+      vAvs.forEach(function (b, j) { b.setAttribute('aria-pressed', j === vi ? 'true' : 'false'); });
+      vQs.forEach(function (q, j) { q.hidden = j !== vi; });
+      if (byUser) track('testimonial_view', { name: vAvs[vi].getAttribute('aria-label') });
+    }
+    vAvs.forEach(function (b, j) { b.addEventListener('click', function () { vHold = true; vShow(j, true); }); });
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { vVis = es[0].isIntersecting; }, { threshold: 0.4 }).observe(vAvs[0].closest('.voices'));
+    setInterval(function () { if (vVis && !vHold && !document.hidden) vShow(vi + 1, false); }, 5000);
+  }
+
   // ---- FAQ ----------------------------------------------------------------------
   $$('.faq-q').forEach(function (b) {
     b.addEventListener('click', function () {

@@ -98,24 +98,28 @@ def r_trainers(c):
 
 
 def r_testimonial(c):
+    """選手證言：上方圓形頭像可點選切換，下方顯示引言（逗號後換行），自動輪替。"""
     ts = c.get('testimonials') or []
     if not ts:
         return ''
-    cards = ''.join(f'''<figure class="voice" style="flex: 0 0 82%; margin: 0; scroll-snap-align: start; border-radius: 24px; background: #FBFAF8; border: 1px solid #E4E0D7; overflow: hidden">
-        <img src="assets/img/{esc(t["photo"])}" alt="{esc(t["name"])}" loading="lazy" style="display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover">
-        <div style="padding: 20px 20px 22px">
-          <div aria-hidden="true" style="font-size: 48px; font-weight: 900; line-height: 0.6; height: 22px; color: #9C7A4B">“</div>
-          <blockquote style="margin: 6px 0 0; font-size: 20px; font-weight: 900; line-height: 1.45">{esc(t["quote"])}</blockquote>
-          <figcaption style="margin-top: 14px; font-size: 13px; color: #5E5B55">{esc(t["role"])}<b style="display: block; margin-top: 2px; font-size: 16px; color: #2C2B28">{esc(t["name"])}</b></figcaption>
-        </div>
-      </figure>''' for t in ts)
-    return f'''<section data-section="testimonials" style="padding: 80px 0 0">
-    <div style="padding: 0 16px"><div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #7E6139">他們怎麼說</div><h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">國手與冠軍，<br>也交給凝聚。</h2></div>
-    <div class="voices" aria-label="選手推薦" style="display: flex; gap: 12px; margin-top: 24px; padding: 0 16px 4px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 16px; -webkit-overflow-scrolling: touch">
-      {cards}
-      <div aria-hidden="true" style="flex: 0 0 4px"></div>
+    br = lambda q: esc(q).replace('，', '，<br>')
+    avs = ''.join(
+        f'<button type="button" class="voice-av" data-voice="{i}" aria-pressed="{"true" if i == 0 else "false"}" aria-label="{esc(t["name"])}">'
+        f'<img src="assets/img/{esc(t["photo"])}" alt="" loading="lazy"></button>'
+        for i, t in enumerate(ts))
+    qs = ''.join(
+        f'''<figure class="voice-q" data-voice="{i}"{"" if i == 0 else " hidden"} style="margin: 0">
+        <blockquote style="margin: 0; font-size: 22px; font-weight: 900; line-height: 1.5">{br(t["quote"])}</blockquote>
+        <figcaption style="margin-top: 16px"><b style="display: block; font-size: 16px">{esc(t["name"])}</b><span style="display: block; font-size: 13px; color: #7E6139; margin-top: 2px">{esc(t["role"])}</span></figcaption>
+      </figure>''' for i, t in enumerate(ts))
+    return f'''<section data-section="testimonials" style="padding: 80px 16px 0">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #7E6139">他們怎麼說</div>
+    <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">國手與冠軍，<br>也交給凝聚。</h2>
+    <div class="voices" style="margin-top: 28px; padding: 28px 22px 30px; border-radius: 28px; background: #ECE4D3; text-align: center">
+      <div role="group" aria-label="選擇推薦人" style="display: flex; justify-content: center; gap: 14px">{avs}</div>
+      <div aria-hidden="true" style="font-size: 56px; font-weight: 900; line-height: .5; height: 24px; margin-top: 28px; color: #9C7A4B">“</div>
+      <div aria-live="polite" style="margin-top: 10px; min-height: 132px">{qs}</div>
     </div>
-    <div style="margin: 10px 16px 0; font-size: 12px; color: #8A857B">← 左右滑動看更多</div>
   </section>
   '''
 
