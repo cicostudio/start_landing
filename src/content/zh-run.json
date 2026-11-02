@@ -163,10 +163,6 @@
       "備賽課表一增量，<br>身體就先喊投降。"
     ],
     [
-      "你的困擾，可能也在這裡。",
-      "菜就多練，但你有練對嗎？"
-    ],
-    [
       "國手與冠軍，<br>也交給凝聚。",
       "鐵人與國手，<br>都在這裡調整。"
     ],
@@ -201,6 +197,10 @@
     [
       ">是不是你？<",
       ">你是不是也困擾...<"
+    ],
+    [
+      "<div style=\"font-size: 16px; font-weight: 700; color: #45433E; margin-top: 12px\">你的困擾，可能也在這裡。</div>",
+      "<div style=\"display: flex; align-items: center; gap: 10px; margin-top: 28px\"><span style=\"font-size: 18px; font-weight: 900\">菜就多練，但你有練對嗎？</span><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#7E6139\" stroke-width=\"2.2\" aria-hidden=\"true\"><path d=\"M12 5v14M6 13l6 6 6-6\"></path></svg></div>"
     ]
   ],
   "bubbles": [
