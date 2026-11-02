@@ -117,7 +117,7 @@ def r_testimonial(c):
     <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #7E6139">他們怎麼說</div>
     <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">國手與冠軍，<br>也交給凝聚。</h2>
     <div class="voices" style="margin-top: 28px; padding: 28px 22px 30px; border-radius: 28px; background: #ECE4D3; text-align: center">
-      <div role="group" aria-label="選擇推薦人" style="display: flex; justify-content: center; gap: 14px">{avs}</div>
+      <div role="group" aria-label="選擇推薦人" style="display: flex; justify-content: center; gap: 8px">{avs}</div>
       <div aria-hidden="true" style="font-size: 56px; font-weight: 900; line-height: .5; height: 24px; margin-top: 28px; color: #9C7A4B">“</div>
       <div aria-live="polite" style="margin-top: 10px; min-height: 132px">{qs}</div>
     </div>
@@ -210,13 +210,15 @@ def apply_overrides(out, c):
 
 def build(name='zh'):
     tpl, c = load(name)
-    early = c['meta'].get('testimonial_after_cases', False)
+    # 選手證言位置：after_wall（是不是你之後）／after_cases（案例之後）／預設（價格之後）
+    pos = c['meta'].get('testimonial_position', 'after_cases' if c['meta'].get('testimonial_after_cases') else 'after_price')
     vals = {
         'head': r_head(c), 'foot': r_foot(c),
         'cases': r_cases(c), 'case_dots': r_case_dots(c), 'faq': r_faq(c), 'stores': r_stores(c),
         'trainers': r_trainers(c), 'hero_slides': r_hero_slides(c),
-        'testimonial': '' if early else r_testimonial(c),
-        'testimonial_early': r_testimonial(c) if early else '',
+        'testimonial': r_testimonial(c) if pos == 'after_price' else '',
+        'testimonial_early': r_testimonial(c) if pos == 'after_cases' else '',
+        'testimonial_after_wall': r_testimonial(c) if pos == 'after_wall' else '',
         'price_regular': esc(c['price']['regular']), 'reschedule': esc(c['price']['reschedule']),
         **{k: esc(v) for k, v in c['links'].items()},
         **{k: esc(v) for k, v in c['images'].items() if isinstance(v, str)},

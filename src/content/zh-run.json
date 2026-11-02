@@ -9,7 +9,7 @@
     "og_image": "assets/img/flow-2.jpg",
     "page_id": "run-zh",
     "template": "zh",
-    "testimonial_after_cases": true
+    "testimonial_position": "after_wall"
   },
   "tracking": {
     "ga4": "G-55G78H5BPG",
