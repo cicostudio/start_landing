@@ -17,9 +17,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 esc = html.escape
 
 
-def load(lang):
-    tpl = open(os.path.join(ROOT, 'src', f'template.{lang}.html'), encoding='utf-8').read()
-    c = json.load(open(os.path.join(ROOT, 'src', 'content', f'{lang}.json'), encoding='utf-8'))
+def load(name):
+    c = json.load(open(os.path.join(ROOT, 'src', 'content', f'{name}.json'), encoding='utf-8'))
+    tpl_name = c['meta'].get('template', 'zh')
+    tpl = open(os.path.join(ROOT, 'src', f'template.{tpl_name}.html'), encoding='utf-8').read()
     return tpl, c
 
 
@@ -126,7 +127,7 @@ def r_testimonial(c):
 def r_head(c):
     m, t = c['meta'], c['tracking']
     url = m['site_url'].rstrip('/') + m['path']
-    og = url + m['og_image']
+    og = m['site_url'].rstrip('/') + '/one/' + m['og_image']   # 素材都放在主版 /one/ 底下
     robots = '' if m.get('indexable') else '<meta name="robots" content="noindex">\n'
     ld = {
         '@context': 'https://schema.org',
@@ -186,33 +187,63 @@ def version_assets(text):
     """Append ?v=<content hash> to every local asset URL so browsers never keep a stale copy."""
     def sub(m):
         path = m.group(2)
-        f = os.path.join(ROOT, 'site', 'one', path)
+        f = os.path.join(ROOT, 'site', 'one', path.replace('/one/', '', 1) if path.startswith('/one/') else path)
         if not os.path.isfile(f):
             return m.group(0)
         h = hashlib.sha1(open(f, 'rb').read()).hexdigest()[:8]
         return f'{m.group(1)}{path}?v={h}'
-    return re.sub(r'((?:src|srcset|href|poster|data-src|data-anim)="|og:image" content="[^"]*?/)(assets/[^"?#]+)', sub, text)
+    return re.sub(r'((?:src|srcset|href|poster|data-src|data-anim)="|og:image" content="[^"]*?/)((?:/one/)?assets/[^"?#]+)', sub, text)
 
 
-def build(lang='zh'):
-    tpl, c = load(lang)
+def apply_overrides(out, c):
+    """分支頁的文案覆寫：只換文字，版面與模組完全共用主版。"""
+    for old, new in c.get('text_overrides', []):
+        assert old in out, f'override not found: {old[:40]}'
+        out = out.replace(old, new)
+    # 「是不是你」泡泡：依原句找到那一則，換掉身份與句子（重複的動畫副本一起換）
+    for old_text, role, text in c.get('bubbles', []):
+        pat = r'>[^<]{1,12}(</div><div style="font-size: 18px[^"]*">)' + re.escape(old_text) + '<'
+        out, n = re.subn(pat, lambda m: '>' + esc(role) + m.group(1) + esc(text) + '<', out)
+        assert n, f'bubble not found: {old_text}'
+    return out
+
+
+def build(name='zh'):
+    tpl, c = load(name)
+    early = c['meta'].get('testimonial_after_cases', False)
     vals = {
         'head': r_head(c), 'foot': r_foot(c),
         'cases': r_cases(c), 'case_dots': r_case_dots(c), 'faq': r_faq(c), 'stores': r_stores(c),
-        'trainers': r_trainers(c), 'hero_slides': r_hero_slides(c), 'testimonial': r_testimonial(c),
+        'trainers': r_trainers(c), 'hero_slides': r_hero_slides(c),
+        'testimonial': '' if early else r_testimonial(c),
+        'testimonial_early': r_testimonial(c) if early else '',
         'price_regular': esc(c['price']['regular']), 'reschedule': esc(c['price']['reschedule']),
         **{k: esc(v) for k, v in c['links'].items()},
         **{k: esc(v) for k, v in c['images'].items() if isinstance(v, str)},
     }
     out = re.sub(r'<!--@(\w+)-->', lambda m: vals[m.group(1)], tpl)
+    out = apply_overrides(out, c)
+    page_dir = c['meta']['path'].strip('/')          # one / run / …
+    if page_dir != 'one':
+        # 共用主版的素材與隱私權頁，不複製檔案
+        out = re.sub(r'((?:src|srcset|href|poster|data-src|data-anim)=")(assets/|favicon\.svg|privacy\.html)', r'\1/one/\2', out)
     out = version_assets(out)
     left = re.findall(r'<!--@\w+-->', out)
     assert not left, left
-    name = 'one/index.html' if lang == 'zh' else f'{lang}/one/index.html'
-    os.makedirs(os.path.dirname(os.path.join(ROOT, 'site', name)), exist_ok=True)
-    open(os.path.join(ROOT, 'site', name), 'w', encoding='utf-8').write(out)
-    print('built site/' + name, len(out), 'bytes')
+    rel = f'{page_dir}/index.html'
+    os.makedirs(os.path.dirname(os.path.join(ROOT, 'site', rel)), exist_ok=True)
+    open(os.path.join(ROOT, 'site', rel), 'w', encoding='utf-8').write(out)
+    print('built site/' + rel, len(out), 'bytes')
+    return c['meta']['site_url'].rstrip('/') + c['meta']['path']
+
+
+def build_all():
+    names = sorted(f[:-5] for f in os.listdir(os.path.join(ROOT, 'src', 'content')) if f.endswith('.json'))
+    urls = [build(n) for n in names]
+    sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    sm += ''.join(f'  <url><loc>{u}</loc></url>\n' for u in urls) + '</urlset>\n'
+    open(os.path.join(ROOT, 'site', 'sitemap.xml'), 'w', encoding='utf-8').write(sm)
 
 
 if __name__ == '__main__':
-    build('zh')
+    build_all()
