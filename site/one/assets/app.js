@@ -38,7 +38,18 @@
   // ---- store cards: expand in place (no leaving the page) ----
   $$('details.store').forEach(function (d) {
     d.addEventListener('toggle', function () {
-      if (d.open) track('store_expand', { store: d.getAttribute('data-store') });
+      if (!d.open) return;
+      track('store_expand', { store: d.getAttribute('data-store') });
+      var m = d.querySelector('.store-map[data-map-src]');
+      if (m && !m.firstChild) {   // 展開時才載入地圖，不拖慢首屏
+        var f = document.createElement('iframe');
+        f.src = m.getAttribute('data-map-src');
+        f.title = d.getAttribute('data-store') + ' 地圖';
+        f.loading = 'lazy';
+        f.referrerPolicy = 'no-referrer-when-downgrade';
+        f.setAttribute('style', 'display:block;width:100%;height:100%;border:0');
+        m.appendChild(f);
+      }
     });
   });
 

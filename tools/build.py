@@ -7,6 +7,7 @@ The template holds the approved design; every piece that changes over time
 so edits never touch layout code. A future admin can write the same JSON (or D1)
 and reuse these renderers.
 """
+from urllib.parse import quote
 import hashlib
 import html
 import json
@@ -79,7 +80,7 @@ CH = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7E613
 
 
 def r_stores(c):
-    """門市卡片：點擊在頁面上展開（不跳出），展開後可直接預約這間；導航降為次要連結。"""
+    """門市卡片：點擊在頁面上展開（不跳出），展開後可直接預約這間；地圖以 iframe 內嵌（展開時才載入）。"""
     rows = []
     for i, s in enumerate(c['stores']):
         pills = ''.join(f'<span style="padding: 2px 8px; border-radius: 999px; background: {bg}; color: {fg}; font-size: 11px; font-weight: 700">{esc(n)}</span>' for n, bg, fg in s['lines'])
@@ -88,10 +89,8 @@ def r_stores(c):
         <summary style="display: flex; align-items: center; gap: 12px; padding: 18px 16px; cursor: pointer; list-style: none"><span style="flex: 1"><span style="display: block; font-size: 19px; font-weight: 900">{esc(s["name"])}</span><span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; color: #5E5B55">{pills}{esc(s["station"])}・<b style="color: #2F6B55">{esc(s["walk"])}</b></span></span><svg class="store-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></summary>
         <div style="padding: 0 16px 18px">
           <div style="font-size: 14px; color: #45433E; line-height: 1.6">{esc(s["address"])}</div>
-          <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px">
-            <a href="<!--@booking_url-->" data-cta="store-{esc(s["id"])}" style="display: flex; align-items: center; justify-content: center; height: 44px; padding: 0 20px; border-radius: 22px; background: #2F6B55; color: #F5F4F1; font-size: 15px; font-weight: 700">預約{esc(s["name"][:2])}店</a>
-            <a href="{esc(s["map_url"])}" target="_blank" rel="noopener" data-track="store_map" data-store="{esc(s["name"])}" style="font-size: 13px; color: #7E6139; text-decoration: underline; text-underline-offset: 3px">Google 地圖導航</a>
-          </div>
+          <div class="store-map" data-map-src="https://www.google.com/maps?q={quote(s["address"])}&hl=zh-TW&z=16&output=embed" style="margin-top: 12px; aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; background: #ECE8E0"></div>
+          <a href="<!--@booking_url-->" data-cta="store-{esc(s["id"])}" style="display: flex; align-items: center; justify-content: center; height: 48px; margin-top: 14px; border-radius: 24px; background: #2F6B55; color: #F5F4F1; font-size: 16px; font-weight: 700">預約{esc(s["name"][:2])}店</a>
         </div>
       </details>''')
     return '<div style="margin-top: 24px; border-radius: 24px; background: #FBFAF8; border: 1px solid #E4E0D7; overflow: hidden">\n      ' + '\n      '.join(rows) + '\n    </div>'
