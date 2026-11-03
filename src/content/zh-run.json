@@ -277,7 +277,8 @@
           "note": "開跑之前，先讓身體組織回復順暢！自我改善結構健康，跟著做就對了～",
           "url": "https://s.cicostudio.com/a/ref-gc-restr"
         }
-      ]
+      ],
+      "show_more": false
     },
     {
       "id": "cert",
@@ -295,7 +296,8 @@
           "note": "學習順著結構發力，幫助你在日常、運動時都能更有效率地使用身體。",
           "url": "https://s.cicostudio.com/a/ref-pc-smobo"
         }
-      ]
+      ],
+      "show_more": false
     }
   ]
 }
