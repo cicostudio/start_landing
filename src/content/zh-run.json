@@ -259,5 +259,43 @@
       "破 PB 跑者",
       "練量越來越大，成績卻卡住一年。"
     ]
+  ],
+  "cross_sell": [
+    {
+      "id": "group",
+      "name": "結構團班課",
+      "picks_label": "推薦給跑者",
+      "more_url": "https://cico.pse.is/cs26gc",
+      "picks": [
+        {
+          "name": "結構跑法｜週二 20:00",
+          "note": "在跑動中也能自我調整？專屬跑者的超猛外掛，讓你不知不覺突破瓶頸！",
+          "url": "https://s.cicostudio.com/a/ref-gc-strun"
+        },
+        {
+          "name": "還原伸展｜週二 19:00",
+          "note": "開跑之前，先讓身體組織回復順暢！自我改善結構健康，跟著做就對了～",
+          "url": "https://s.cicostudio.com/a/ref-gc-restr"
+        }
+      ]
+    },
+    {
+      "id": "cert",
+      "name": "專業認證課",
+      "picks_label": "推薦給跑者",
+      "more_url": "https://cico.pse.is/26c00",
+      "picks": [
+        {
+          "name": "結構原力認證 L1+2",
+          "note": "透過呼吸與覺察，傾聽身體現在的狀況，並用工具＋動作幫助改善問題。",
+          "url": "https://s.cicostudio.com/a/ref-pc-prifo"
+        },
+        {
+          "name": "順勢訓練認證 L1+2",
+          "note": "學習順著結構發力，幫助你在日常、運動時都能更有效率地使用身體。",
+          "url": "https://s.cicostudio.com/a/ref-pc-smobo"
+        }
+      ]
+    }
   ]
 }
