@@ -30,3 +30,6 @@ section[data-section="closing"]{height:clamp(560px,90svh,844px)!important}
 .voice-q{animation:voiceIn .4s ease}
 @keyframes voiceIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.voice-av,.voice-av img{transition:none}.voice-q{animation:none}}
+.store summary::-webkit-details-marker{display:none}
+.store-chev{transition:transform .25s ease;flex:0 0 18px}
+.store[open] .store-chev{transform:rotate(180deg)}

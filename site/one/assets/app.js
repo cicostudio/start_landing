@@ -35,6 +35,13 @@
     });
   });
 
+  // ---- store cards: expand in place (no leaving the page) ----
+  $$('details.store').forEach(function (d) {
+    d.addEventListener('toggle', function () {
+      if (d.open) track('store_expand', { store: d.getAttribute('data-store') });
+    });
+  });
+
   // ---- sticky bar: show once the hero CTA has scrolled away ----------------
   var sticky = $('.sticky'), heroCta = $('[data-cta="hero"]');
   if (sticky && heroCta && 'IntersectionObserver' in window) {

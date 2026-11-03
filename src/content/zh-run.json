@@ -84,7 +84,9 @@
       "station": "善導寺站 6 號出口",
       "walk": "步行 8 分鐘",
       "map_url": "https://maps.app.goo.gl/Krt4iJGSLNFcKaqJA",
-      "city": "台北市"
+      "city": "台北市",
+      "address": "台北市中山區長安東路一段42號",
+      "id": "taipei"
     },
     {
       "name": "板橋創始店",
@@ -103,7 +105,9 @@
       "station": "新埔站 3 號出口",
       "walk": "步行 2 分鐘",
       "map_url": "https://maps.app.goo.gl/pUZz4HPXpt5n4fYy9",
-      "city": "新北市板橋區"
+      "city": "新北市板橋區",
+      "address": "新北市板橋區民生路二段232-20號",
+      "id": "banqiao"
     }
   ],
   "faq": [
