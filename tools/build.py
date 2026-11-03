@@ -96,6 +96,38 @@ def r_stores(c):
     return '<div style="margin-top: 24px; border-radius: 24px; background: #FBFAF8; border: 1px solid #E4E0D7; overflow: hidden">\n      ' + '\n      '.join(rows) + '\n    </div>'
 
 
+def r_cross_sell(c):
+    """不只一對一：團班課／認證課。有「推薦課程」時做成下拉選單（點開在頁面上展開，不跳出）；沒有就是直接連結。"""
+    L = c['links']
+    items = c.get('cross_sell') or [
+        {'id': 'group', 'name': '結構團班課', 'more_url': L['group_url']},
+        {'id': 'cert', 'name': '專業認證課', 'more_url': L['cert_url']},
+    ]
+    chev_r = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>'
+    chev_d = '<svg class="store-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>'
+    rows = []
+    for i, it in enumerate(items):
+        top = '' if i == 0 else 'border-top: 1px solid #DDD3BF; '
+        picks = it.get('picks') or []
+        if not picks:
+            rows.append(f'<a href="{esc(it["more_url"])}" data-track="xsell_{esc(it["id"])}" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 12px; padding: 14px 20px; {top}min-height: 44px"><span style="flex: 1; font-size: 15px; font-weight: 700">{esc(it["name"])}</span>{chev_r}</a>')
+            continue
+        cards = ''
+        for p in picks:
+            note = f'<span style="display: block; margin-top: 2px; font-size: 13px; color: #5E5B55; line-height: 1.5">{esc(p["note"])}</span>' if p.get('note') else ''
+            cards += (f'<a href="{esc(p["url"])}" data-track="xsell_pick" data-course="{esc(p["name"])}" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-top: 8px; border-radius: 14px; background: #F7F2E8">'
+                      f'<span style="flex: 1"><span style="display: block; font-size: 15px; font-weight: 700">{esc(p["name"])}</span>{note}</span>{chev_r}</a>')
+        label = esc(it.get('picks_label', '推薦課程'))
+        more = esc(it.get('more_label', '點我看更多課程'))
+        rows.append(
+            f'<details class="store xsell" data-xsell="{esc(it["id"])}" style="{top}">'
+            f'<summary style="display: flex; align-items: center; gap: 12px; padding: 14px 20px; min-height: 44px; cursor: pointer; list-style: none"><span style="flex: 1; font-size: 15px; font-weight: 700">{esc(it["name"])}</span>{chev_d}</summary>'
+            f'<div style="padding: 0 20px 18px"><div style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #7E6139">{label}</div>{cards}'
+            f'<a href="{esc(it["more_url"])}" data-track="xsell_{esc(it["id"])}" target="_blank" rel="noopener" style="display: inline-block; margin-top: 14px; font-size: 14px; font-weight: 700; color: #7E6139; text-decoration: underline; text-underline-offset: 3px">{more}</a></div>'
+            f'</details>')
+    return '\n      '.join(rows)
+
+
 def r_trainers(c):
     if not c.get('trainers'):
         return ''
@@ -223,7 +255,7 @@ def build(name='zh'):
     pos = c['meta'].get('testimonial_position', 'after_cases' if c['meta'].get('testimonial_after_cases') else 'after_price')
     vals = {
         'head': r_head(c), 'foot': r_foot(c),
-        'cases': r_cases(c), 'case_dots': r_case_dots(c), 'faq': r_faq(c), 'stores': r_stores(c),
+        'cases': r_cases(c), 'case_dots': r_case_dots(c), 'faq': r_faq(c), 'stores': r_stores(c), 'cross_sell': r_cross_sell(c),
         'trainers': r_trainers(c), 'hero_slides': r_hero_slides(c),
         'testimonial': r_testimonial(c) if pos == 'after_price' else '',
         'testimonial_early': r_testimonial(c) if pos == 'after_cases' else '',

@@ -30,6 +30,7 @@
     a.addEventListener('click', function () {
       var t = a.getAttribute('data-track');
       if (t === 'line_click') track('line_click', {}, { meta: 'Contact', line: 'LineClick' });
+      else if (t === 'xsell_pick') track('xsell_pick', { course: a.getAttribute('data-course'), link_url: a.href });
       else if (t === 'store_map') track('store_map_click', { store: a.getAttribute('data-store') }, { meta: 'FindLocation' });
       else track(t, { link_url: a.href });
     });
@@ -51,6 +52,10 @@
         m.appendChild(f);
       }
     });
+  });
+
+  $$('details.xsell').forEach(function (d) {
+    d.addEventListener('toggle', function () { if (d.open) track('xsell_expand', { course_type: d.getAttribute('data-xsell') }); });
   });
 
   // ---- sticky bar: show once the hero CTA has scrolled away ----------------
