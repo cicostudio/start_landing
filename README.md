@@ -44,3 +44,14 @@ tools/build.py         ← template + content → site/index.html
 LIFF 端可讀取這些參數，於預約完成時回傳 Conversions API。
 
 除錯：在瀏覽器 console 輸入 `NJ_DEBUG=1`，之後的事件會印出來。
+
+## 行銷後台（cico.tw/admin/）
+
+- 介紹頁的 `track.js` 會把行為事件送到同網域 `/api/e`（第一方收集）；LIFF 預約頁（first_visit）會回報「進入預約頁」「完成預約」。
+- `worker/index.js`：收集、登入、`/api/stats`；資料存在 Durable Object（SQLite），部署時自動建立。
+- 後台頁面：`site/admin/index.html`（單一 HTML，資料需登入才拿得到）。
+- Cloudflare → Workers → start-landing → 設定 → 變數和祕密：
+  - 祕密 `ADMIN_PASSWORD`（必填，後台密碼；更換後所有人需重新登入）
+  - 選用：祕密 `META_ADS_TOKEN` ＋ 變數 `META_AD_ACCOUNT_ID`（Meta 廣告曝光／點擊／花費）
+  - 選用：祕密 `GA_SA_KEY`（服務帳戶 JSON）＋ 變數 `GA4_PROPERTY_ID`（GA4 對照）
+- 本機測試：`.dev.vars` 放 `ADMIN_PASSWORD="..."`，執行 `npx wrangler dev`。

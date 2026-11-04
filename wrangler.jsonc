@@ -1,9 +1,26 @@
 {
-  // 純靜態網站：Cloudflare Worker 直接提供 site/ 資料夾
+  // 靜態網站（site/）＋ 一支小 Worker 負責 /api/*（行為收集、後台數據、登入）
   "name": "start-landing",
+  "main": "worker/index.js",
   "compatibility_date": "2025-06-01",
   "assets": {
     "directory": "./site",
-    "html_handling": "auto-trailing-slash"
-  }
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "run_worker_first": ["/api/*"]
+  },
+  // 數據存在 Durable Object 內建的 SQLite，部署時自動建立，不用另外開資料庫
+  "durable_objects": {
+    "bindings": [{ "name": "ANALYTICS", "class_name": "Analytics" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Analytics"] }],
+  // 在 Cloudflare 後台設定的變數，部署時保留不覆蓋
+  "keep_vars": true
+  // 祕密（在 Cloudflare 後台 → 這支 Worker → 設定 → 變數和祕密 新增，不要寫在這裡）：
+  //   ADMIN_PASSWORD   後台登入密碼（必填）
+  //   META_ADS_TOKEN   Meta 系統使用者權杖（ads_read）
+  //   GA_SA_KEY        Google 服務帳戶金鑰 JSON 全文
+  // 一般變數（同一頁新增，類型選「文字」）：
+  //   GA4_PROPERTY_ID     GA4 資源 ID（純數字）
+  //   META_AD_ACCOUNT_ID  Meta 廣告帳號編號（act_ 後面的數字）
 }

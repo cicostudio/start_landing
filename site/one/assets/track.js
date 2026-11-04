@@ -40,6 +40,55 @@
     _lt('send', 'pv', [S.lineTag]);
   }
 
+
+  // ---- 第一方收集（後台 cico.tw/admin 的數據來源）--------------------------
+  // 送到同網域 /api/e，不經第三方，所以廣告攔截器通常不會擋。
+  // 在後台勾「這台裝置不計入」會設定 nj_optout，自己測試時不會灌水。
+  var OPT = false; try { OPT = !!localStorage.getItem('nj_optout'); } catch (e) {}
+  var Q = [], flushT = null;
+  function flush() {
+    clearTimeout(flushT); flushT = null;
+    if (!Q.length || OPT) { Q = []; return; }
+    var body = JSON.stringify(Q); Q = [];
+    try {
+      if (navigator.sendBeacon && navigator.sendBeacon('/api/e', new Blob([body], { type: 'text/plain' }))) return;
+    } catch (e) {}
+    try { fetch('/api/e', { method: 'POST', body: body, keepalive: true, headers: { 'Content-Type': 'text/plain' } }); } catch (e) {}
+  }
+  function push(ev, now) { ev.sid = SID; ev.vid = vid; ev.page = S.page; Q.push(ev); if (now) flush(); else if (!flushT) flushT = setTimeout(flush, 1500); }
+  // 工作階段：同一個分頁 30 分鐘內算同一次造訪
+  var SID, ss = null;
+  try { ss = JSON.parse(sessionStorage.getItem('nj_sid') || 'null'); } catch (e) {}
+  var newSession = !ss || now - ss.t > 30 * 60e3 || Object.keys(hit).length > 0 && ss.p !== S.page;
+  SID = newSession ? (crypto.randomUUID ? crypto.randomUUID() : String(now) + Math.random().toString(16).slice(2)) : ss.id;
+  function touch() { try { sessionStorage.setItem('nj_sid', JSON.stringify({ id: SID, t: Date.now(), p: S.page })); } catch (e) {} }
+  touch();
+  if (newSession) push({ n: 'session_start', a: hit }, true);
+  // 停留時間（只算畫面在前景的時間）、10 秒標記、離開時停在哪一屏
+  var shown = document.visibilityState === 'visible' ? Date.now() : 0, acc = 0, pinged = false;
+  function engaged() { return acc + (shown ? Date.now() - shown : 0); }
+  function currentSection() {
+    var el = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
+    var sec = el && el.closest && el.closest('section[data-section]');
+    return sec ? sec.getAttribute('data-section') : null;
+  }
+  function scrollPct() { var h = document.documentElement; return Math.min(100, Math.round((h.scrollTop + innerHeight) / h.scrollHeight * 100)); }
+  setInterval(function () {
+    if (!pinged && engaged() >= 10000) { pinged = true; push({ n: 'ping', ms: engaged(), scroll: scrollPct() }, true); }
+  }, 2000);
+  function leave() {
+    if (shown) { acc += Date.now() - shown; shown = 0; }
+    touch();
+    push({ n: 'exit', ms: acc, scroll: scrollPct(), k: currentSection() }, true);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') leave(); else shown = Date.now();
+  });
+  window.addEventListener('pagehide', function () { if (shown) leave(); });
+  var KEYOF = { section_view: 'section', scroll_depth: 'percent', booking_click: 'cta_location', faq_open: 'question',
+    store_expand: 'store', store_map_click: 'store', xsell_pick: 'course', xsell_expand: 'course_type',
+    case_view: 'case_id', testimonial_view: 'name' };
+
   // ---- one call for every event -----------------------------------------
   // opts.meta  = Meta standard event name (or 'custom:Name')
   // opts.line  = LINE conversion type
@@ -52,6 +101,7 @@
       else fbq('track', opts.meta, params);
     }
     if (opts.line && window._lt && S.lineTag) _lt('send', 'cv', { type: opts.line }, [S.lineTag]);
+    try { var kk = KEYOF[name]; push({ n: name, k: kk ? params[kk] : (params.link_url || null) }, name === 'booking_click'); } catch (e) {}
     if (window.NJ_DEBUG) console.log('[track]', name, params, opts);
   };
 })();
