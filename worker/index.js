@@ -11,11 +11,21 @@
  *
  * 選用的外部數據（設定了才會啟用）：
  *   GA4：  變數 GA4_PROPERTY_ID ＋ 祕密 GA_SA_KEY（服務帳戶 JSON）
- *   Meta： 變數 META_AD_ACCOUNT_ID ＋ 祕密 META_ADS_TOKEN（需 ads_read）
+ *   Meta： 祕密 META_ADS_TOKEN（需 ads_read）＋ 各產品線的廣告帳號變數
+ *          META_AD_ACCOUNT_ID（一對一）、META_AD_ACCOUNT_GROUP（團班課）、META_AD_ACCOUNT_CERT（認證課／工作坊／講座）
  */
 import { DurableObject } from 'cloudflare:workers';
 
+// 頁面（page_id → 網址）。新增頁面時在這裡加一行，並在 LINES 指定它屬於哪條產品線。
 const PAGES = { 'one-on-one-zh': '/one/', 'run-zh': '/run/' };
+// 產品線：各自的頁面與 Meta 廣告帳號（帳號編號放在 Cloudflare 變數，名稱見 acct）
+export const LINES = {
+  one:   { name: '一對一',              pages: ['one-on-one-zh', 'run-zh'], acct: 'META_AD_ACCOUNT_ID' },
+  group: { name: '團班課',              pages: [],                          acct: 'META_AD_ACCOUNT_GROUP' },
+  cert:  { name: '認證課／工作坊／講座', pages: [],                          acct: 'META_AD_ACCOUNT_CERT' },
+};
+const lineOf = (q) => LINES[q.line] ? q.line : 'one';
+const linesInfo = (env) => Object.fromEntries(Object.entries(LINES).map(([k, l]) => [k, { name: l.name, pages: l.pages.map((p) => ({ id: p, path: PAGES[p] })), ads: !!(env.META_ADS_TOKEN && env[l.acct]) }]));
 const SESSION_DAYS = 30;
 
 export default {
@@ -30,9 +40,12 @@ export default {
       if (!(await authed(req, env))) return json({ error: 'unauthorized' }, 401);
       const q = Object.fromEntries(url.searchParams);
       const db = store(env);
+      q.line = lineOf(q);
       const out = await db.stats(q);
       out.ga4 = await ga4Report(env, db, q).catch((e) => ({ error: String(e.message || e) }));
-      out.meta = await metaReport(env, db, q).catch((e) => ({ error: String(e.message || e) }));
+      out.meta = await metaReport(env, db, q).catch((e) => ({ configured: true, error: String(e.message || e) }));
+      out.lines = linesInfo(env);
+      out.line = lineOf(q);
       return json(out);
     }
     if (p.startsWith('/api/')) return json({ error: 'not found' }, 404);
@@ -202,7 +215,9 @@ export class Analytics extends DurableObject {
   // ---- 後台數據 -------------------------------------------------------------
   stats(q) {
     const r = range(q);
-    const page = PAGES[q.page] ? q.page : '';
+    const pages = (LINES[q.line] || LINES.one).pages;
+    const page = pages.includes(q.page) ? q.page : '';
+    const inPages = pages.length ? pages.map((x) => `'${x}'`).join(',') : `''`;
     const ch = q.channel || '';
     const one = (sql, ...a) => this.sql.exec(sql, ...a).toArray()[0] || {};
     const all = (sql, ...a) => this.sql.exec(sql, ...a).toArray();
@@ -210,13 +225,13 @@ export class Analytics extends DurableObject {
     // 篩選條件（套用在 sessions 表 s 與 conv 表）
     const sw = (from, to) => {
       let w = `s.day BETWEEN '${from}' AND '${to}'`;
-      if (page) w += ` AND s.page='${page}'`;
+      w += page ? ` AND s.page='${page}'` : ` AND s.page IN (${inPages})`;
       if (ch) w += ` AND (${CHANNEL_SQL.replace(/\bsrc\b/g, 's.src').replace(/\bmed\b/g, 's.med')})='${ch.replace(/'/g, '')}'`;
       return w;
     };
     const cw = (from, to, kind) => {
       let w = `day BETWEEN '${from}' AND '${to}' AND kind='${kind}'`;
-      if (page) w += ` AND page='${page}'`;
+      w += page ? ` AND page='${page}'` : ` AND page IN (${inPages})`;
       if (ch) w += ` AND (${CHANNEL_SQL})='${ch.replace(/'/g, '')}'`;
       return w;
     };
@@ -282,9 +297,10 @@ export class Analytics extends DurableObject {
 // Meta 廣告（Marketing API insights）
 // ---------------------------------------------------------------------------
 async function metaReport(env, db, q) {
-  if (!env.META_ADS_TOKEN || !env.META_AD_ACCOUNT_ID) return { configured: false };
+  const L = LINES[lineOf(q)];
+  if (!env.META_ADS_TOKEN || !env[L.acct]) return { configured: false, acct_var: L.acct };
   const r = range(q);
-  const acct = String(env.META_AD_ACCOUNT_ID).replace(/^act_/, '');
+  const acct = String(env[L.acct]).trim().replace(/^act_/, '');
   const v = env.META_API_VERSION || 'v21.0';
   const key = `meta:${acct}:${r.from}:${r.to}`;
   const hit = await db.cacheGet(key, 15 * 60e3);
@@ -334,14 +350,16 @@ async function googleToken(sa) {
 async function ga4Report(env, db, q) {
   if (!env.GA_SA_KEY || !env.GA4_PROPERTY_ID) return { configured: false };
   const r = range(q);
-  const path = PAGES[q.page] || '';
-  const key = `ga4:${r.from}:${r.to}:${path}`;
+  const L = LINES[lineOf(q)];
+  if (!L.pages.length) return { configured: true, no_pages: true };
+  const path = L.pages.includes(q.page) ? PAGES[q.page] : '';
+  const key = `ga4:${r.from}:${r.to}:${path || L.pages.join(',')}`;
   const hit = await db.cacheGet(key, 15 * 60e3);
   if (hit) return hit;
   const sa = JSON.parse(env.GA_SA_KEY);
   const tok = await googleToken(sa);
   const by = (p) => ({ filter: { fieldName: 'landingPage', stringFilter: { matchType: 'BEGINS_WITH', value: p } } });
-  const filter = path ? by(path) : { orGroup: { expressions: Object.values(PAGES).map(by) } };
+  const filter = path ? by(path) : L.pages.length === 1 ? by(PAGES[L.pages[0]]) : { orGroup: { expressions: L.pages.map((p) => by(PAGES[p])) } };
   const run = async (body) => {
     const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${env.GA4_PROPERTY_ID}:runReport`, {
       method: 'POST', headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },

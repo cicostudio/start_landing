@@ -46,6 +46,11 @@ header.top{position:sticky;top:0;z-index:20;background:rgba(245,244,241,.94);bac
 .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;flex:0 0 auto}
 .seg button{border:0;background:transparent;border-radius:999px;height:30px;padding:0 12px;font-size:13px;cursor:pointer;white-space:nowrap;color:var(--ink2)}
 .seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:700}
+.line-seg button{height:34px;padding:0 16px;font-size:14px}
+.line-seg button[aria-pressed=true]{background:var(--brand)}
+.adsonly .site{display:none!important}
+.adsonly-note{display:none}
+.adsonly .adsonly-note{display:block}
 .filters select,.filters input[type=date]{flex:0 0 auto;height:36px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:0 12px;font-size:13px}
 .custom{display:flex;gap:6px;align-items:center;flex:0 0 auto;font-size:13px;color:var(--ink2)}
 
@@ -177,6 +182,13 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
         <span class="upd" id="upd"></span>
         <button class="btn-ghost" id="logout" type="button">登出</button>
       </div>
+      <div class="filters" role="toolbar" aria-label="產品線">
+        <div class="seg line-seg" id="lineSeg">
+          <button type="button" data-l="one" aria-pressed="true">一對一</button>
+          <button type="button" data-l="group">團班課</button>
+          <button type="button" data-l="cert">認證課／工作坊／講座</button>
+        </div>
+      </div>
       <div class="filters" role="toolbar" aria-label="篩選">
         <div class="seg" id="rangeSeg">
           <button type="button" data-r="0">今天</button>
@@ -186,11 +198,7 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
           <button type="button" data-r="c">自訂</button>
         </div>
         <span class="custom hidden" id="custom"><input type="date" id="from"> – <input type="date" id="to"></span>
-        <select id="page" aria-label="頁面">
-          <option value="">全部頁面</option>
-          <option value="one-on-one-zh">一般版 /one/</option>
-          <option value="run-zh">跑者版 /run/</option>
-        </select>
+        <select id="page" aria-label="頁面"><option value="">全部頁面</option></select>
         <select id="channel" aria-label="流量來源">
           <option value="">全部流量</option>
           <option value="meta_paid">Meta 廣告</option>
@@ -210,9 +218,10 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     <div class="empty" id="loading">讀取中…</div>
     <div id="content" class="hidden">
 
+      <div class="card adsonly-note" id="adsNote" style="margin-top:20px"></div>
       <!-- 漏斗 -->
-      <div class="sec-title"><h2>行銷漏斗</h2><span id="funnelHint">從看到廣告到完成預約，每一步留下多少人</span></div>
-      <div class="grid main-split">
+      <div class="sec-title site"><h2>行銷漏斗</h2><span id="funnelHint">從看到廣告到完成預約，每一步留下多少人</span></div>
+      <div class="grid main-split site">
         <div class="card">
           <h2>漏斗總覽</h2>
           <p class="sub">長條是人數（工作階段）；兩步之間是「往下一步的轉換率」與流失人數。</p>
@@ -235,14 +244,14 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
       <div class="tiles" id="calcTiles"></div>
 
       <!-- 趨勢 -->
-      <div class="sec-title"><h2>每日趨勢</h2><span>滑過（或點）長條看當天數字</span></div>
-      <div class="grid three" id="trend"></div>
-      <div style="margin-top:10px"><button class="toggle" id="dailyToggle" type="button">看每日明細表</button></div>
+      <div class="sec-title site"><h2>每日趨勢</h2><span>滑過（或點）長條看當天數字</span></div>
+      <div class="grid three site" id="trend"></div>
+      <div class="site" style="margin-top:10px"><button class="toggle" id="dailyToggle" type="button">看每日明細表</button></div>
       <div class="card hidden" id="dailyTable" style="margin-top:10px"></div>
 
       <!-- 來源 -->
-      <div class="sec-title"><h2>流量來源</h2><span>哪個管道帶來的人留得住、會預約</span></div>
-      <div class="grid two">
+      <div class="sec-title site"><h2>流量來源</h2><span>哪個管道帶來的人留得住、會預約</span></div>
+      <div class="grid two site">
         <div class="card"><h2>依管道</h2><div class="tbl" id="chTable"></div></div>
         <div class="card"><h2>來源／媒介／活動</h2><p class="sub">utm_source / utm_medium / utm_campaign，前 20 名</p><div class="tbl" id="srcTable"></div></div>
       </div>
@@ -252,17 +261,17 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
       <div class="card" id="metaCard"></div>
 
       <!-- 行為細節 -->
-      <div class="sec-title"><h2>頁面互動</h2><span>哪些按鈕、內容有人用</span></div>
-      <div class="grid three">
+      <div class="sec-title site"><h2>頁面互動</h2><span>哪些按鈕、內容有人用</span></div>
+      <div class="grid three site">
         <div class="card"><h2>預約按鈕位置</h2><p class="sub">哪一顆「預約」最常被點</p><div class="tbl" id="ctaTable"></div></div>
         <div class="card"><h2>裝置</h2><p class="sub">手機與電腦的表現差異</p><div class="tbl" id="devTable"></div></div>
         <div class="card"><h2>捲動深度</h2><p class="sub">捲到頁面某個比例的工作階段</p><div class="tbl" id="scrollTable"></div></div>
       </div>
-      <div class="card" style="margin-top:16px"><h2>互動明細</h2><p class="sub">FAQ、門市展開、案例切換、課程點擊等</p><div class="tbl" id="interTable"></div></div>
+      <div class="card site" style="margin-top:16px"><h2>互動明細</h2><p class="sub">FAQ、門市展開、案例切換、課程點擊等</p><div class="tbl" id="interTable"></div></div>
 
       <!-- GA4 -->
-      <div class="sec-title"><h2>GA4 對照</h2><span>Google Analytics 的同期間數字（每 15 分鐘更新）</span></div>
-      <div class="card" id="gaCard"></div>
+      <div class="sec-title site"><h2>GA4 對照</h2><span>Google Analytics 的同期間數字（每 15 分鐘更新）</span></div>
+      <div class="card site" id="gaCard"></div>
 
       <div class="sec-title"><h2>指標說明</h2></div>
       <div class="card">
@@ -308,7 +317,7 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
   var div = function (a, b) { return b > 0 ? a / b : null; };
 
   // ---------- 狀態 ----------
-  var state = { r: '7', from: '', to: '', page: '', channel: '', camp: '' };
+  var state = { line: 'one', r: '7', from: '', to: '', page: '', channel: '', camp: '' };
   try { Object.assign(state, JSON.parse(localStorage.getItem('nj_admin_f') || '{}')); } catch (e) {}
   var data = null;
   function save() { try { localStorage.setItem('nj_admin_f', JSON.stringify(state)); } catch (e) {} }
@@ -343,6 +352,17 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     $('#custom').classList.toggle('hidden', state.r !== 'c');
     var d = rangeDates(); $('#from').value = d[0]; $('#to').value = d[1];
     $('#page').value = state.page; $('#channel').value = state.channel;
+    $$('#lineSeg button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-l') === state.line)); });
+  }
+  $$('#lineSeg button').forEach(function (b) { b.addEventListener('click', function () { state.line = b.getAttribute('data-l'); state.page = ''; state.camp = ''; save(); load(); }); });
+  var PAGE_NAMES = { 'one-on-one-zh': '一般版', 'run-zh': '跑者版' };
+  function pageOptions(D) {
+    var L = D.lines && D.lines[D.line], sel = $('#page');
+    var pages = L ? L.pages : [];
+    sel.innerHTML = '<option value="">全部頁面</option>' + pages.map(function (p) { return '<option value="' + esc(p.id) + '">' + esc((PAGE_NAMES[p.id] || p.id) + ' ' + p.path) + '</option>'; }).join('');
+    sel.value = state.page; if (sel.value !== state.page) state.page = '';
+    sel.classList.toggle('hidden', pages.length < 2);
+    $('#channel').classList.toggle('hidden', !pages.length);
   }
   $$('#rangeSeg button').forEach(function (b) { b.addEventListener('click', function () { state.r = b.getAttribute('data-r'); if (state.r === 'c') { var d = rangeDates(); state.from = d[0]; state.to = d[1]; } save(); syncFilters(); load(); }); });
   ['from', 'to'].forEach(function (id) { $('#' + id).addEventListener('change', function () { state[id] = $('#' + id).value; save(); load(); }); });
@@ -357,7 +377,7 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     var d = rangeDates(), my = ++seq;
     $('#app').classList.remove('hidden');
     $('#loading').classList.remove('hidden'); $('#loading').textContent = '讀取中…';
-    var qs = new URLSearchParams({ from: d[0], to: d[1], page: state.page, channel: state.channel });
+    var qs = new URLSearchParams({ line: state.line, from: d[0], to: d[1], page: state.page, channel: state.channel });
     fetch('/api/stats?' + qs, { credentials: 'same-origin' }).then(function (r) {
       if (r.status === 401) { showLogin(''); throw 0; }
       return r.json();
@@ -395,6 +415,11 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     $('#cmpLabel').textContent = r.from === r.to ? r.from + '，與前一天相比' : r.from + ' ～ ' + r.to + '，與前 ' + r.n + ' 天相比';
     $('#since').textContent = D.first_day ? '自家收集從 ' + D.first_day + ' 開始累積' : '自家收集尚無資料（介紹頁有人造訪後就會出現）';
 
+    pageOptions(D);
+    var L = D.lines && D.lines[D.line];
+    var adsOnly = !!(L && !L.pages.length);
+    $('#content').classList.toggle('adsonly', adsOnly);
+    if (adsOnly) $('#adsNote').innerHTML = '<h2>' + esc(L.name) + '：目前只看廣告成效</h2><p class="sub">這條產品線還沒有對應的介紹頁，所以只顯示 Meta 廣告的曝光、點擊、花費與換算指標。之後做了頁面並設定歸屬這條線，造訪、跳出與報名漏斗就會出現。</p>';
     renderFunnel(c, ad, D);
     renderReach(D);
     renderTiles(c, p, ad, adp, D);
@@ -492,7 +517,8 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
       (t.f ? '<div class="f">' + t.f + '</div>' : '') + '</div>';
   }
   function renderTiles(c, p, ad, adp, D) {
-    var raw = [];
+    var raw = [], adsOnly = $('#content').classList.contains('adsonly');
+    if (adsOnly) return renderAdTiles(ad, adp, D);
     if (ad) {
       raw.push({ lab: '廣告曝光', val: n0(ad.impressions), d: delta(ad.impressions, adp.impressions), src: 'Meta' });
       raw.push({ lab: '廣告連結點擊', val: n0(ad.clicks), d: delta(ad.clicks, adp.clicks), src: 'Meta' });
@@ -524,6 +550,26 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     $('#calcTiles').innerHTML = calc.map(function (t) { return tile(t, true); }).join('');
   }
 
+  function renderAdTiles(ad, adp, D) {
+    if (!ad) {
+      $('#rawTiles').innerHTML = '<div class="empty" style="grid-column:1/-1">' + (D.meta && D.meta.error ? 'Meta 廣告讀取失敗，詳見下方。' : '這條產品線的廣告帳號還沒設定，見下方「Meta 廣告」。') + '</div>';
+      $('#calcTiles').innerHTML = ''; return;
+    }
+    var rate = function (a, b) { var v = div(a, b); return v == null ? null : v * 100; };
+    $('#rawTiles').innerHTML = [
+      { lab: '廣告曝光', val: n0(ad.impressions), d: delta(ad.impressions, adp.impressions), src: 'Meta' },
+      { lab: '觸及人數', val: n0(ad.reach), d: delta(ad.reach, adp.reach), src: 'Meta', f: '各活動加總，同一人可能重複計算' },
+      { lab: '廣告連結點擊', val: n0(ad.clicks), d: delta(ad.clicks, adp.clicks), src: 'Meta' },
+      { lab: '廣告花費', val: money(ad.spend), d: delta(ad.spend, adp.spend, { lowerBetter: true }), src: 'Meta' }
+    ].map(function (t) { return tile(t); }).join('');
+    $('#calcTiles').innerHTML = [
+      { lab: '點閱率 CTR', val: p1(rate(ad.clicks, ad.impressions)), d: delta(rate(ad.clicks, ad.impressions), rate(adp.clicks, adp.impressions), { pp: true }), f: '連結點擊 ÷ 曝光', src: 'Meta' },
+      { lab: '每次點擊成本 CPC', val: money(div(ad.spend, ad.clicks)), d: delta(div(ad.spend, ad.clicks), div(adp.spend, adp.clicks), { lowerBetter: true }), f: '花費 ÷ 連結點擊', src: 'Meta' },
+      { lab: '千次曝光成本 CPM', val: money(div(ad.spend * 1000, ad.impressions)), d: delta(div(ad.spend * 1000, ad.impressions), div(adp.spend * 1000, adp.impressions), { lowerBetter: true }), f: '花費 ÷ 曝光 × 1000', src: 'Meta' },
+      { lab: '平均曝光頻率', val: (div(ad.impressions, ad.reach) || 0).toFixed(2) + '<small>次</small>', d: '<span class="tag">曝光 ÷ 觸及</span>', f: '太高代表同一批人看太多次', src: 'Meta' }
+    ].map(function (t) { return tile(t, true); }).join('');
+  }
+
   // ---------- 趨勢（每張一個量，不用雙軸） ----------
   function days(from, to) { var a = [], d = from; while (d <= to && a.length < 400) { a.push(d); d = shift(d, 1); } return a; }
   function renderTrend(D) {
@@ -548,12 +594,12 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
   function bars(el, rows, c) {
     var W = 320, H = 150, pl = 30, pr = 6, pt = 8, pb = 22;
     var vals = rows.map(function (r) { return r[c.key]; });
-    var max = Math.max.apply(null, vals.filter(function (v) { return v != null; }).concat([c.pct ? 10 : 1]));
-    if (c.pct) max = Math.min(100, Math.ceil(max / 10) * 10); else { var mag = Math.pow(10, Math.floor(Math.log10(max))); max = Math.ceil(max / mag) * mag; }
+    var max = Math.max.apply(null, vals.filter(function (v) { return v != null; }).concat([c.pct ? 1 : 1]));
+    var mag = Math.pow(10, Math.floor(Math.log10(max))); max = Math.ceil(max / mag) * mag; if (c.pct) max = Math.min(100, max);
     var n = rows.length, bw = (W - pl - pr) / n, gap = Math.min(2, bw * 0.25);
     var y = function (v) { return pt + (H - pt - pb) * (1 - v / max); };
     var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="' + c.title + '每日">';
-    [0, 0.5, 1].forEach(function (t) { var yy = y(max * t); svg += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + yy + '" y2="' + yy + '" stroke="#ECE8E0" stroke-width="1" vector-effect="non-scaling-stroke"/><text x="' + (pl - 6) + '" y="' + (yy + 3.5) + '" text-anchor="end" font-size="10" fill="#8C877E">' + (c.pct ? Math.round(max * t) + '%' : n0(max * t)) + '</text>'; });
+    [0, 0.5, 1].forEach(function (t) { var yy = y(max * t); svg += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + yy + '" y2="' + yy + '" stroke="#ECE8E0" stroke-width="1" vector-effect="non-scaling-stroke"/><text x="' + (pl - 6) + '" y="' + (yy + 3.5) + '" text-anchor="end" font-size="10" fill="#8C877E">' + (c.pct ? (+(max * t).toFixed(1)) + '%' : n0(max * t)) + '</text>'; });
     rows.forEach(function (r, i) {
       var v = r[c.key], x = pl + i * bw + gap / 2, w = Math.max(1, bw - gap);
       if (v != null && v > 0) { var yy = y(v), hh = H - pb - yy; svg += '<path d="M' + x + ',' + (H - pb) + 'V' + (yy + Math.min(3, hh)) + 'q0,-' + Math.min(3, hh) + ' ' + Math.min(3, w / 2) + ',-' + Math.min(3, hh) + 'H' + (x + w - Math.min(3, w / 2)) + 'q' + Math.min(3, w / 2) + ',0 ' + Math.min(3, w / 2) + ',' + Math.min(3, hh) + 'V' + (H - pb) + 'Z" fill="#2F6B55"/>'; }
@@ -617,6 +663,11 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
   // ---------- Meta ----------
   function renderMeta(D) {
     var m = D.meta, el = $('#metaCard');
+    var L = D.lines && D.lines[D.line];
+    if (m && !m.configured && D.lines && D.lines.one && D.lines.one.ads) {
+      el.innerHTML = '<div class="setup"><h2>' + esc(L ? L.name : '') + '的廣告帳號還沒設定</h2><p class="sub">Cloudflare → Workers → start-landing → 設定 → 變數和祕密：新增文字變數 <code>' + esc(m.acct_var || '') + '</code>，值填這條產品線的廣告帳號編號（只填數字）。權杖不用重做，但企業管理平台的系統用戶要被指派這個廣告帳號。</p></div>';
+      return;
+    }
     if (!m || !m.configured) {
       el.innerHTML = '<div class="setup"><h2>尚未串接 Meta 廣告</h2><p class="sub">串接後，漏斗最上面會多出「廣告曝光 → 廣告點擊」，並算出點閱率、每次點擊成本、到站率與每筆預約成本。</p>' +
         '<ol><li>企業管理平台 → 使用者 → 系統用戶 → 新增，指派你的廣告帳號（權限：檢視成效即可）。</li><li>對這個系統用戶「產生權杖」，勾選 <code>ads_read</code>。</li><li>Cloudflare → Workers → start-landing → 設定 → 變數和祕密：新增祕密 <code>META_ADS_TOKEN</code>（貼權杖），新增文字變數 <code>META_AD_ACCOUNT_ID</code>（廣告帳號編號，act_ 後面的數字）。</li></ol></div>';
@@ -625,10 +676,18 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     if (m.error) { el.innerHTML = '<h2>Meta 廣告讀取失敗</h2><p class="sub">' + esc(m.error) + '</p>'; return; }
     var rows = m.campaigns.slice().sort(function (a, b) { return b.spend - a.spend; });
     var t = adTotals(m.campaigns);
-    el.innerHTML = '<h2>廣告活動成效</h2><p class="sub">「到站」「預約」欄是 utm_campaign 與活動名稱相同時才對得起來；建議廣告網址加上 <code>utm_campaign={{campaign.name}}</code>。</p><div class="tbl">' +
+    el.innerHTML = '<h2>廣告活動成效</h2><p class="sub">建議廣告網址加上 <code>utm_source=facebook&amp;utm_medium=paid&amp;utm_campaign={{campaign.name}}</code>，造訪與預約才分得出是哪個活動帶來的。</p><div class="tbl">' +
       table(['廣告活動', '曝光', '觸及', '連結點擊', '點閱率', '花費', 'CPC'], rows.map(function (x) {
         return [esc(x.name), n0(x.impressions), n0(x.reach), n0(x.clicks), p1(pct(x.clicks, x.impressions)), money(x.spend), money(div(x.spend, x.clicks))];
-      }).concat([['<b>合計</b>', '<b>' + n0(t.impressions) + '</b>', '—', '<b>' + n0(t.clicks) + '</b>', '<b>' + p1(pct(t.clicks, t.impressions)) + '</b>', '<b>' + money(t.spend) + '</b>', '<b>' + money(div(t.spend, t.clicks)) + '</b>']]), '這段期間沒有廣告投放') + '</div>';
+      }).concat(rows.length ? [['<b>合計</b>', '<b>' + n0(t.impressions) + '</b>', '—', '<b>' + n0(t.clicks) + '</b>', '<b>' + p1(pct(t.clicks, t.impressions)) + '</b>', '<b>' + money(t.spend) + '</b>', '<b>' + money(div(t.spend, t.clicks)) + '</b>']] : []), '這段期間沒有廣告投放') + '</div>' +
+      '<div class="grid three" style="margin-top:16px"><div><h2 style="font-size:14px">每日花費</h2><div class="chart" id="mch0"></div></div><div><h2 style="font-size:14px">每日連結點擊</h2><div class="chart" id="mch1"></div></div><div><h2 style="font-size:14px">每日點閱率</h2><div class="chart" id="mch2"></div></div></div>';
+    var by = {};
+    days(D.range.from, D.range.to).forEach(function (d) { by[d] = { d: d, spend: 0, clicks: 0, impressions: 0 }; });
+    (m.daily || []).forEach(function (x) { if (by[x.day] && (!state.camp || x.id === state.camp)) { by[x.day].spend += x.spend; by[x.day].clicks += x.clicks; by[x.day].impressions += x.impressions; } });
+    var drows = Object.keys(by).sort().map(function (k) { var o = by[k]; o.ctr = o.impressions ? o.clicks / o.impressions * 100 : null; return o; });
+    bars($('#mch0'), drows, { key: 'spend', title: '每日花費', fmt: money });
+    bars($('#mch1'), drows, { key: 'clicks', title: '每日連結點擊', fmt: n0 });
+    bars($('#mch2'), drows, { key: 'ctr', title: '每日點閱率', fmt: p1, pct: true });
   }
 
   // ---------- GA4 ----------

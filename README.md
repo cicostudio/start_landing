@@ -52,6 +52,7 @@ LIFF 端可讀取這些參數，於預約完成時回傳 Conversions API。
 - 後台頁面：`site/admin/index.html`（單一 HTML，資料需登入才拿得到）。
 - Cloudflare → Workers → start-landing → 設定 → 變數和祕密：
   - 祕密 `ADMIN_PASSWORD`（必填，後台密碼；更換後所有人需重新登入）
-  - 選用：祕密 `META_ADS_TOKEN` ＋ 變數 `META_AD_ACCOUNT_ID`（Meta 廣告曝光／點擊／花費）
+  - 選用：祕密 `META_ADS_TOKEN` ＋ 各產品線廣告帳號變數 `META_AD_ACCOUNT_ID`（一對一）、`META_AD_ACCOUNT_GROUP`（團班課）、`META_AD_ACCOUNT_CERT`（認證課／工作坊／講座）
+  - 產品線與頁面的對應寫在 `worker/index.js` 的 `LINES`；新增頁面時把 page_id 加進對應產品線
   - 選用：祕密 `GA_SA_KEY`（服務帳戶 JSON）＋ 變數 `GA4_PROPERTY_ID`（GA4 對照）
 - 本機測試：`.dev.vars` 放 `ADMIN_PASSWORD="..."`，執行 `npx wrangler dev`。
