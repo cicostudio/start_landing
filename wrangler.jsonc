@@ -7,7 +7,7 @@
     "directory": "./site",
     "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/mcp/*"]
   },
   // 數據存在 Durable Object 內建的 SQLite，部署時自動建立，不用另外開資料庫
   "durable_objects": {
@@ -20,6 +20,7 @@
   //   ADMIN_PASSWORD   後台登入密碼（必填）
   //   META_ADS_TOKEN   Meta 系統使用者權杖（ads_read）
   //   GA_SA_KEY        Google 服務帳戶金鑰 JSON 全文
+  //   MCP_KEY          Claude 連接器網址裡的密鑰（https://cico.tw/mcp/<MCP_KEY>）
   // 一般變數（同一頁新增，類型選「文字」）：
   //   GA4_PROPERTY_ID     GA4 資源 ID（純數字）
   //   META_AD_ACCOUNT_ID  Meta 廣告帳號編號（act_ 後面的數字）

@@ -15,6 +15,7 @@
  *          META_AD_ACCOUNT_ID（一對一）、META_AD_ACCOUNT_GROUP（團班課）、META_AD_ACCOUNT_CERT（認證課／工作坊／講座）
  */
 import { DurableObject } from 'cloudflare:workers';
+import { handleMcp } from './mcp.js';
 
 // 頁面（page_id → 網址）。新增頁面時在這裡加一行，並在 LINES 指定它屬於哪條產品線。
 const PAGES = { 'one-on-one-zh': '/one/', 'run-zh': '/run/' };
@@ -47,6 +48,12 @@ export default {
       out.lines = linesInfo(env);
       out.line = lineOf(q);
       return json(out);
+    }
+    if (p.startsWith('/mcp/') || p === '/mcp') {
+      // Claude 用的唯讀 MCP：網址裡帶 MCP_KEY 才能用（沒設 MCP_KEY 就關閉）
+      const key = p.split('/')[2] || '';
+      if (!env.MCP_KEY || !same(await hmac('mcp', key), await hmac('mcp', env.MCP_KEY))) return new Response('Not found', { status: 404 });
+      return handleMcp(req, env, { store, stats: (db, q) => db.stats(q), metaReport, ga4Report, linesInfo, LINES });
     }
     if (p.startsWith('/api/')) return json({ error: 'not found' }, 404);
     return env.ASSETS.fetch(req);

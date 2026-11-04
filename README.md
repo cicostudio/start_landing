@@ -56,3 +56,9 @@ LIFF 端可讀取這些參數，於預約完成時回傳 Conversions API。
   - 產品線與頁面的對應寫在 `worker/index.js` 的 `LINES`；新增頁面時把 page_id 加進對應產品線
   - 選用：祕密 `GA_SA_KEY`（服務帳戶 JSON）＋ 變數 `GA4_PROPERTY_ID`（GA4 對照）
 - 本機測試：`.dev.vars` 放 `ADMIN_PASSWORD="..."`，執行 `npx wrangler dev`。
+
+## Claude 連接器（MCP，唯讀）
+
+- 網址：`https://cico.tw/mcp/<MCP_KEY>`；在 Cloudflare 新增祕密 `MCP_KEY`（一長串隨機字）才會開啟。
+- 工具：`list_product_lines`、`get_marketing_report`、`get_ad_campaigns`（`worker/mcp.js`）。
+- claude.ai → 設定 → 連接器 → 新增自訂連接器，貼上上面的網址。
