@@ -161,7 +161,7 @@ export class Analytics extends DurableObject {
 
   // 互動事件：有這些就不算跳出
   static INTER = new Set(['booking_click', 'line_click', 'faq_open', 'store_expand', 'store_map_click', 'xsell_expand', 'xsell_pick',
-    'case_view', 'testimonial_view', 'xsell_group', 'xsell_cert', 'animation_toggle']);
+    'case_view', 'testimonial_view', 'xsell_group', 'xsell_cert', 'animation_toggle', 'hero_step_click']);
 
   async ingest(list) {
     const now = Date.now();
@@ -290,7 +290,7 @@ export class Analytics extends DurableObject {
     const ctas = all(`SELECT e.k cta, COUNT(*) clicks, COUNT(DISTINCT e.sid) sessions FROM events e JOIN sessions s ON s.sid=e.sid
       WHERE e.name='booking_click' AND ${sw(r.from, r.to)} GROUP BY e.k ORDER BY clicks DESC`);
     const inter = all(`SELECT e.name, e.k, COUNT(*) n, COUNT(DISTINCT e.sid) sessions FROM events e JOIN sessions s ON s.sid=e.sid
-      WHERE e.name IN ('faq_open','store_expand','store_map_click','xsell_expand','xsell_pick','case_view','testimonial_view','line_click','xsell_group','xsell_cert')
+      WHERE e.name IN ('hero_step_click','faq_open','store_expand','store_map_click','xsell_expand','xsell_pick','case_view','testimonial_view','line_click','xsell_group','xsell_cert')
         AND ${sw(r.from, r.to)} GROUP BY 1, 2 ORDER BY n DESC LIMIT 30`);
     const scroll = all(`SELECT e.k pct, COUNT(DISTINCT e.sid) n FROM events e JOIN sessions s ON s.sid=e.sid
       WHERE e.name='scroll_depth' AND ${sw(r.from, r.to)} GROUP BY e.k`);

@@ -36,6 +36,16 @@
     });
   });
 
+  // ---- 首屏服務步驟：點了捲到「體驗流程」，記錄點哪一步（算互動，不算跳出）----
+  $$('.hero-step').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      track('hero_step_click', { step: a.getAttribute('data-step') });
+      var t = document.querySelector('section[data-section="process"]');
+      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
   // ---- store cards: expand in place (no leaving the page) ----
   $$('details.store').forEach(function (d) {
     d.addEventListener('toggle', function () {

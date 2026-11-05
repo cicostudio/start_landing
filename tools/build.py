@@ -96,6 +96,26 @@ def r_stores(c):
     return '<div style="margin-top: 24px; border-radius: 24px; background: #FBFAF8; border: 1px solid #E4E0D7; overflow: hidden">\n      ' + '\n      '.join(rows) + '\n    </div>'
 
 
+def r_hero_extra(c):
+    """首屏的「服務三步驟＋承諾」（內容檔有 hero.steps 才出現）。步驟可點，捲到體驗流程並記錄 hero_step_click。"""
+    h = c.get('hero') or {}
+    steps = h.get('steps') or []
+    if not steps:
+        return ''
+    cells = ''.join(
+        f'<a href="#process" class="hero-step" data-step="{esc(st["id"])}" style="display: block; padding: 10px 8px; border-radius: 14px; background: rgba(245,244,241,0.10); border: 1px solid rgba(245,244,241,0.18); color: #F5F4F1">'
+        f'<span style="display: block; font-size: 11px; font-weight: 700; color: #9FC9B4">{esc(st["n"])}</span>'
+        f'<span style="display: block; font-size: 15px; font-weight: 900; margin-top: 2px">{esc(st["title"])}</span>'
+        f'<span style="display: block; font-size: 12px; color: #C9C5BC; margin-top: 1px">{esc(st["sub"])}</span></a>'
+        for st in steps)
+    out = f'\n      <div role="list" aria-label="服務流程" style="display: grid; grid-template-columns: repeat({len(steps)}, 1fr); gap: 6px; margin-top: 16px">{cells}</div>'
+    if h.get('promise'):
+        out += ('\n      <div style="display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 14px; color: #E4E0D7">'
+                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7FC3A1" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>'
+                f'{esc(h["promise"])}</div>')
+    return out
+
+
 def r_cross_sell(c):
     """不只一對一：團班課／認證課。有「推薦課程」時做成下拉選單（點開在頁面上展開，不跳出）；沒有就是直接連結。"""
     L = c['links']
@@ -255,7 +275,8 @@ def build(name='zh'):
     pos = c['meta'].get('testimonial_position', 'after_cases' if c['meta'].get('testimonial_after_cases') else 'after_price')
     vals = {
         'head': r_head(c), 'foot': r_foot(c),
-        'cases': r_cases(c), 'case_dots': r_case_dots(c), 'faq': r_faq(c), 'stores': r_stores(c), 'cross_sell': r_cross_sell(c),
+        'cases': r_cases(c), 'case_dots': r_case_dots(c), 'faq': r_faq(c), 'stores': r_stores(c), 'cross_sell': r_cross_sell(c), 'hero_extra': r_hero_extra(c),
+        'hero_class': (' class="hero-compact"' if (c.get('hero') or {}).get('steps') else ''),
         'trainers': r_trainers(c), 'hero_slides': r_hero_slides(c),
         'testimonial': r_testimonial(c) if pos == 'after_price' else '',
         'testimonial_early': r_testimonial(c) if pos == 'after_cases' else '',

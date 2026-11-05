@@ -305,7 +305,7 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
   var CH = { meta_paid: 'Meta 廣告', meta_organic: 'FB／IG 自然', line: 'LINE', google: 'Google 自然', google_paid: 'Google 廣告', direct: '直接輸入', other: '其他網站' };
   var CTA = { hero: '首屏按鈕', price: '價格區按鈕', sticky: '底部常駐列', 'store-taipei': '台北店卡片', 'store-banqiao': '板橋店卡片' };
   var DEV = { mobile: '手機', desktop: '電腦', tablet: '平板', '': '未知' };
-  var INTER = { faq_open: 'FAQ 展開', store_expand: '門市展開', store_map_click: '門市地圖', xsell_expand: '課程分類展開', xsell_pick: '推薦課程點擊', case_view: '案例切換', testimonial_view: '證言切換', line_click: 'LINE 客服', xsell_group: '團班課頁', xsell_cert: '認證課頁' };
+  var INTER = { hero_step_click: '首屏步驟點擊', faq_open: 'FAQ 展開', store_expand: '門市展開', store_map_click: '門市地圖', xsell_expand: '課程分類展開', xsell_pick: '推薦課程點擊', case_view: '案例切換', testimonial_view: '證言切換', line_click: 'LINE 客服', xsell_group: '團班課頁', xsell_cert: '認證課頁' };
 
   // ---------- 格式 ----------
   var nf = new Intl.NumberFormat('zh-TW');
@@ -716,6 +716,7 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     ['造訪（工作階段）', '客觀數據。一個人在同一個分頁打開介紹頁算一次造訪；30 分鐘沒動作或換了廣告來源再進來，算新的一次。'],
     ['不重複訪客', '客觀數據。同一支手機／瀏覽器只算一人（存在瀏覽器裡的訪客編號，清除資料後會算新的人）。'],
     ['跳出的造訪', '客觀數據。停留未滿 10 秒，而且沒有任何點擊或展開（按鈕、FAQ、門市、案例、課程…）就離開。只往下捲不算互動。'],
+    ['首屏步驟點擊', '客觀數據。跑者版首屏的「跑姿錄影／結構調整／發力訓練」三格被點的次數（點了會捲到體驗流程，算互動、不算跳出）。'],
     ['預約按鈕點擊', '客觀數據。所有「預約」按鈕被點的次數（首屏、價格、底部常駐列、門市卡片）。'],
     ['進入預約頁', '客觀數據。從介紹頁點進 LIFF 預約頁並成功開啟（同一人同一天只算一次）。'],
     ['完成預約', '客觀數據。在預約頁送出表單完成預約（同一筆只算一次）。'],

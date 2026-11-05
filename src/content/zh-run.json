@@ -156,11 +156,7 @@
     ],
     [
       "痛會回來，<br>是因為原因還在。",
-      "15K 就開始掉速？<br>不一定是練不夠。"
-    ],
-    [
-      "找出原因、調整到位，<br>再陪你把它維持住。",
-      "凝聚陪你從跑姿「看」出問題，<br>調開卡住的結構、練出順暢的發力。"
+      "15K 就掉速？<br>先找出卡住你的結構。"
     ],
     [
       "按摩完舒服一天，<br>過兩天又緊回來。",
@@ -221,6 +217,26 @@
     [
       "兩間都在捷運旁。",
       "捷運站外步行可達，<br>開車、騎車也方便。"
+    ],
+    [
+      "<p style=\"margin: 14px 0 0; font-size: 17px; line-height: 1.5; color: #E4E0D7\">找出原因、調整到位，<br>再陪你把它維持住。</p>",
+      ""
+    ],
+    [
+      "<div style=\"margin-top: 14px; font-size: 13px; line-height: 1.6; color: #C9C5BC; text-align: center\">2018 年創立・台北／板橋兩間門市</div>",
+      ""
+    ],
+    [
+      "<span style=\"font-size: 12px; color: #D6E4DC\">120 分鐘・NT$1,999</span>",
+      "<span style=\"font-size: 12px; color: #D6E4DC\">120 分鐘・NT$1,999・免費改期</span>"
+    ],
+    [
+      "<h1 style=\"margin: 16px 0 0; font-size: 40px;",
+      "<h1 style=\"margin: 12px 0 0; font-size: 34px;"
+    ],
+    [
+      "height: 60px; margin-top: 24px; border-radius: 30px; background: #2F6B55",
+      "height: 58px; margin-top: 18px; border-radius: 29px; background: #2F6B55"
     ]
   ],
   "bubbles": [
@@ -299,5 +315,28 @@
       ],
       "show_more": false
     }
-  ]
+  ],
+  "hero": {
+    "steps": [
+      {
+        "id": "video",
+        "n": "01",
+        "title": "跑姿錄影",
+        "sub": "看出卡點"
+      },
+      {
+        "id": "adjust",
+        "n": "02",
+        "title": "結構調整",
+        "sub": "當場鬆開"
+      },
+      {
+        "id": "train",
+        "n": "03",
+        "title": "發力訓練",
+        "sub": "練到留住"
+      }
+    ],
+    "promise": "第一次就感覺跑起來更輕、更順"
+  }
 }

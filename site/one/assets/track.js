@@ -87,7 +87,7 @@
   window.addEventListener('pagehide', function () { if (shown) leave(); });
   var KEYOF = { section_view: 'section', scroll_depth: 'percent', booking_click: 'cta_location', faq_open: 'question',
     store_expand: 'store', store_map_click: 'store', xsell_pick: 'course', xsell_expand: 'course_type',
-    case_view: 'case_id', testimonial_view: 'name' };
+    case_view: 'case_id', testimonial_view: 'name', hero_step_click: 'step' };
 
   // ---- one call for every event -----------------------------------------
   // opts.meta  = Meta standard event name (or 'custom:Name')
