@@ -1,0 +1,126 @@
+<!--@head-->
+<style>
+body{margin:0}
+
+button{font:inherit;cursor:pointer}
+@keyframes rise{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+@keyframes rise{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+@keyframes spreadL{0%,25%{transform:translateX(5px)}60%,100%{transform:translateX(0)}}
+@keyframes spreadR{0%,25%{transform:translateX(-5px)}60%,100%{transform:translateX(0)}}
+@keyframes arrows{0%,30%{opacity:0}60%,100%{opacity:1}}
+@keyframes cardIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes sq1{0%,25%{transform:translate(3px,-4px) rotate(14deg)}60%,100%{transform:none}}
+@keyframes sq3{0%,25%{transform:translate(-4px,3px) rotate(-12deg)}60%,100%{transform:none}}
+@keyframes sq5{0%,25%{transform:translate(4px,4px) rotate(18deg)}60%,100%{transform:none}}
+@keyframes sq7{0%,25%{transform:translate(2px,5px) rotate(-16deg)}60%,100%{transform:none}}
+@keyframes kb{from{transform:scale(1.04)}to{transform:scale(1.16)}}
+@media (prefers-reduced-motion: reduce){.kb{animation:none!important}}
+</style>
+<style>
+/* 直球痛點版（/two/）：首屏照片只佔上方一段，內容跟著往下排，手機一屏內看到標題、快選與預約 */
+section[data-section="hero"].hero-direct{height:auto!important;min-height:0}
+.hero-direct .hd-photo{position:relative;height:clamp(150px,26svh,260px);overflow:hidden}
+.hero-direct .hero-slides{position:absolute;inset:0}
+.hero-direct .hero-slide{object-position:50% 28%}
+.pain-chip{display:inline-flex;align-items:center;height:40px;padding:0 15px;border-radius:20px;border:1.5px solid rgba(245,244,241,.42);background:rgba(245,244,241,.08);color:#F5F4F1;font-size:14px;font-weight:700;transition:background .2s ease,border-color .2s ease}
+.pain-chip:hover,.pain-chip:active{background:rgba(245,244,241,.18)}
+.pain-chip[aria-pressed="true"]{background:#F2A48F;border-color:#F2A48F;color:#2C2B28}
+details.pain summary::-webkit-details-marker{display:none}
+details.pain[open] .store-chev{transform:rotate(180deg)}
+details.pain[open]{background:#FFF8F4}
+details.pain[open] summary{padding-bottom:10px!important}
+@keyframes painFlash{0%{box-shadow:inset 0 0 0 2px #F2A48F}100%{box-shadow:inset 0 0 0 2px rgba(242,164,143,0)}}
+details.pain.flash{animation:painFlash 1.6s ease-out}
+@media (prefers-reduced-motion: reduce){.pain-chip{transition:none}details.pain.flash{animation:none}}
+</style>
+</head>
+<body>
+<div class="page" style="position: relative; box-sizing: border-box; background: #F5F4F1; color: #2C2B28; overflow: hidden">
+  <div style="position: absolute; top: 0; left: 0; right: 0; z-index: 2; display: flex; align-items: center; height: 56px; padding: 0 16px">
+    <img src="assets/img/logo-white.png" alt="凝聚運動顧問 CiCO STUDIO" width="141" height="26" style="display: block; height: 26px; width: auto; filter: drop-shadow(0 1px 2px rgba(28,27,25,0.35))">
+  </div>
+  <section data-section="hero" aria-label="開場" class="hero-direct" style="position: relative; background: #1C1B19; color: #F5F4F1">
+    <div class="hd-photo" aria-hidden="true"><div id="hero-slides" class="hero-slides"><!--@hero_slides--></div><div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(28,27,25,0.5) 0%, rgba(28,27,25,0) 30%, rgba(28,27,25,0.2) 55%, #1C1B19 100%)"></div></div>
+    <div style="position: relative; margin-top: -40px; padding: 0 16px 24px">
+      <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(245,244,241,0.16); border: 1px solid rgba(245,244,241,0.28); font-size: 12px; font-weight: 700"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 3px; background: #F2A48F"></span>跑者一對一・台北／板橋</span>
+      <h1 style="margin: 12px 0 0; font-size: 34px; font-weight: 900; line-height: 1.12; letter-spacing: -0.01em">休息、按摩、拉筋<br>都試過了，<br><span style="color: #F2A48F">還是一跑就痛？</span></h1>
+      <p style="margin: 12px 0 0; font-size: 15px; line-height: 1.6; color: #E4E0D7">痛的地方不一定是源頭，卡住的結構才是。<br>120 分鐘錄下跑姿，當場找出卡點、當場調整。</p>
+      <div style="margin-top: 18px; font-size: 13px; font-weight: 700; color: #C9C5BC">你卡在哪？點一下看我們怎麼找</div>
+      <div role="group" aria-label="選擇你的困擾" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px"><!--@pain_chips--></div>
+      <a href="<!--@booking_url-->" data-cta="hero" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60px; margin-top: 20px; border-radius: 30px; background: #2F6B55; color: #F5F4F1"><span style="font-size: 17px; font-weight: 700">預約首次體驗 NT$<!--@price_first--></span><span style="font-size: 12px; color: #D6E4DC"><s>原價 NT$<!--@price_regular--></s>・120 分鐘・<!--@reschedule--></span></a>
+      <!--@trust-->
+    </div>
+  </section>
+  <section data-section="pain_answer" id="pain-answer" style="padding: 56px 16px 0">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #7E6139">先找原因，再談怎麼練</div>
+    <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">痛的那一點，<br>通常不是源頭。</h2>
+    <div style="margin-top: 24px; border-radius: 22px; background: #FBFAF8; border: 1px solid #E4E0D7; overflow: hidden">
+      <!--@pain_answers-->
+    </div>
+  </section>
+  <section data-section="compare" style="padding: 80px 16px 0">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #7E6139">你試過的方法</div>
+    <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">不是方法沒用，<br>是它們只處理那一點。</h2>
+    <!--@compare-->
+  </section>
+  <section data-section="cases" style="padding: 80px 16px 0">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #7E6139">真實案例</div>
+    <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">痠痛是一個點，<br>問題是一條線。</h2>
+    <div style="margin-top: 24px; border-radius: 26px; overflow: hidden">
+      <div class="anim" id="case-track" style="display: flex; transition: transform .6s ease">
+<!--@cases--></div>
+    </div>
+    <div id="case-dots" style="display: flex; gap: 6px">
+      <!--@case_dots-->
+    </div>
+    <a href="<!--@booking_url-->" data-cta="cases" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 56px; margin-top: 20px; border-radius: 28px; background: #2F6B55; color: #F5F4F1"><span style="font-size: 16px; font-weight: 700">我也想找出卡點</span><span style="font-size: 11px; color: #D6E4DC">首次體驗 120 分鐘・NT$<!--@price_first--></span></a>
+  </section>
+  <!--@testimonial_early-->
+  <section data-section="price" style="padding: 80px 16px 0">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #7E6139">給第一次來的你</div>
+    <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">兩個小時，<br>把一直痛的原因找出來。</h2>
+    <div style="margin-top: 24px; border-radius: 26px; background: #FFFFFF; border: 1px solid #E4E0D7; box-shadow: 0 10px 30px rgba(126,97,57,0.10)">
+      <div style="padding: 26px 22px 24px; text-align: center">
+        <div style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: #ECE4D3; font-size: 13px; color: #7E6139; font-weight: 700">首次體驗價</div>
+        <div style="font-size: 52px; font-weight: 900; line-height: 1; letter-spacing: -0.02em; margin-top: 12px">NT$<!--@price_first--></div>
+        <div style="font-size: 13px; color: #8A857B; margin-top: 8px"><s>原價 NT$<!--@price_regular--></s></div>
+      </div>
+      <div style="position: relative; border-top: 1.5px dashed #D9D1C1"><span aria-hidden="true" style="position: absolute; left: -13px; top: -13px; width: 26px; height: 26px; border-radius: 13px; background: #F5F4F1; border: 1px solid #E4E0D7; box-sizing: border-box; clip-path: inset(0 0 0 50%)"></span><span aria-hidden="true" style="position: absolute; right: -13px; top: -13px; width: 26px; height: 26px; border-radius: 13px; background: #F5F4F1; border: 1px solid #E4E0D7; box-sizing: border-box; clip-path: inset(0 50% 0 0)"></span></div>
+      <div style="padding: 22px 22px 24px">
+        <div style="font-size: 13px; color: #7E6139; font-weight: 700">這 120 分鐘包含</div>
+        <ul style="list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px">
+          <li style="display: flex; gap: 14px; align-items: center"><span style="flex: 0 0 40px; height: 40px; border-radius: 20px; background: #ECE4D3; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"></rect><path d="M16 10l5-3v10l-5-3"></path></svg></span><span><span style="display: block; font-size: 16px; font-weight: 700">跑姿錄影評估</span><span style="display: block; font-size: 13px; color: #8A857B; margin-top: 2px">錄影對照，看得到自己的力線</span></span></li>
+          <li style="display: flex; gap: 14px; align-items: center"><span style="flex: 0 0 40px; height: 40px; border-radius: 20px; background: #ECE4D3; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 013 0V12M11 11V4.5a1.5 1.5 0 013 0V12M14 11.5V6a1.5 1.5 0 013 0v7c0 4-2.5 7-6 7s-5-2-6.5-4.5L3 12.5a1.5 1.5 0 012.5-1.5L8 13"></path></svg></span><span><span style="display: block; font-size: 16px; font-weight: 700">徒手結構調整</span><span style="display: block; font-size: 13px; color: #8A857B; margin-top: 2px">撐開緊的、排好亂的</span></span></li>
+          <li style="display: flex; gap: 14px; align-items: center"><span style="flex: 0 0 40px; height: 40px; border-radius: 20px; background: #ECE4D3; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18c2-6 4-9 8-9s6 3 8 9"></path><circle cx="12" cy="5" r="2"></circle></svg></span><span><span style="display: block; font-size: 16px; font-weight: 700">功能整合訓練</span><span style="display: block; font-size: 13px; color: #8A857B; margin-top: 2px">讓身體記住新位置</span></span></li>
+          <li style="display: flex; gap: 14px; align-items: center"><span style="flex: 0 0 40px; height: 40px; border-radius: 20px; background: #ECE4D3; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"></path><path d="M9 11h6M9 15h6M9 7h3"></path></svg></span><span><span style="display: block; font-size: 16px; font-weight: 700">你的身體說明書</span><span style="display: block; font-size: 13px; color: #8A857B; margin-top: 2px">告訴你問題在哪、接下來怎麼安排</span></span></li>
+        </ul>
+      </div>
+    </div>
+    <a href="<!--@booking_url-->" data-cta="price" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60px; margin-top: 24px; border-radius: 30px; background: #2F6B55; color: #F5F4F1"><span style="font-size: 16px; font-weight: 700">預約首次體驗</span><span style="font-size: 12px; color: #D6E4DC">線上選擇門市與時段</span></a>
+    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px; font-size: 13px; color: #5E5B55"><span>全程一對一</span><span aria-hidden="true">·</span><span>台北／板橋可選</span><span aria-hidden="true">·</span><span><!--@reschedule--></span></div>
+  </section>
+  <section data-section="stores" style="padding: 80px 16px 0">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #7E6139">台北／板橋雙據點</div>
+    <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">捷運站外步行可達，<br>開車、騎車也方便。</h2>
+    <!--@stores-->
+  </section>
+  <section data-section="faq" style="padding: 80px 16px 0">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #7E6139">你提問，我解答</div>
+    <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">沒有不值得問的問題<br>只怕好奇心還沒覺醒</h2>
+    <!--@faq-->
+  </section>
+  <section data-section="closing" style="position: relative; margin-top: 80px; height: 844px; overflow: hidden; background: #2C2B28; color: #F5F4F1; text-align: center">
+    <div aria-hidden="true" style="position: absolute; inset: 0"><img src="assets/img/<!--@closing_image-->" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover"></div>
+    <div aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(28,27,25,0.55) 0%, rgba(28,27,25,0.72) 45%, rgba(28,27,25,0.92) 100%)"></div>
+    <div style="position: absolute; left: 16px; right: 16px; top: 50%; transform: translateY(-50%)">
+      <div style="font-size: 32px; font-weight: 900; line-height: 1.12; letter-spacing: -0.02em">別再休兩週、<br>跑回來又痛一次。</div>
+      <div style="font-size: 22px; font-weight: 700; margin-top: 18px; color: #C9A97A">這次，先把卡點找出來。</div>
+    </div>
+    <div style="position: absolute; left: 16px; right: 16px; bottom: 120px; font-size: 12px; color: #A9A49A">© 凝聚運動顧問 · <a href="privacy.html" style="color: #D9D4CA; text-decoration: underline">隱私權政策</a></div>
+  </section>
+  <div class="sticky" style="display: flex; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: rgba(245,244,241,0.96); border-top: 1px solid #E4E0D7">
+    <a href="<!--@line_url-->" data-track="line_click" target="_blank" rel="noopener" aria-label="LINE 客服諮詢" style="display: flex; flex: 0 0 56px; height: 56px; border-radius: 28px; border: 1.5px solid #2C2B28; box-sizing: border-box; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">LINE</a>
+    <a href="<!--@booking_url-->" data-cta="sticky" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: #2F6B55; color: #F5F4F1"><span style="font-size: 16px; font-weight: 700">預約首次體驗</span><span style="font-size: 11px">120 分鐘・NT$1,999</span></a>
+  </div>
+</div>
+<!--@foot-->

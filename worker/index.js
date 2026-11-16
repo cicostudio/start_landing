@@ -18,10 +18,10 @@ import { DurableObject } from 'cloudflare:workers';
 import { handleMcp } from './mcp.js';
 
 // 頁面（page_id → 網址）。新增頁面時在這裡加一行，並在 LINES 指定它屬於哪條產品線。
-const PAGES = { 'one-on-one-zh': '/one/', 'run-zh': '/run/' };
+const PAGES = { 'one-on-one-zh': '/one/', 'run-zh': '/run/', 'run-direct-zh': '/two/' };
 // 產品線：各自的頁面與 Meta 廣告帳號（帳號編號放在 Cloudflare 變數，名稱見 acct）
 export const LINES = {
-  one:   { name: '一對一',              pages: ['one-on-one-zh', 'run-zh'], acct: 'META_AD_ACCOUNT_ID' },
+  one:   { name: '一對一',              pages: ['one-on-one-zh', 'run-zh', 'run-direct-zh'], acct: 'META_AD_ACCOUNT_ID' },
   group: { name: '團班課',              pages: [],                          acct: 'META_AD_ACCOUNT_GROUP' },
   cert:  { name: '認證課／工作坊／講座', pages: [],                          acct: 'META_AD_ACCOUNT_CERT' },
 };
@@ -161,7 +161,7 @@ export class Analytics extends DurableObject {
 
   // 互動事件：有這些就不算跳出
   static INTER = new Set(['booking_click', 'line_click', 'faq_open', 'store_expand', 'store_map_click', 'xsell_expand', 'xsell_pick',
-    'case_view', 'testimonial_view', 'xsell_group', 'xsell_cert', 'animation_toggle', 'hero_step_click']);
+    'case_view', 'testimonial_view', 'xsell_group', 'xsell_cert', 'animation_toggle', 'hero_step_click', 'pain_pick']);
 
   async ingest(list) {
     const now = Date.now();
@@ -290,7 +290,7 @@ export class Analytics extends DurableObject {
     const ctas = all(`SELECT e.k cta, COUNT(*) clicks, COUNT(DISTINCT e.sid) sessions FROM events e JOIN sessions s ON s.sid=e.sid
       WHERE e.name='booking_click' AND ${sw(r.from, r.to)} GROUP BY e.k ORDER BY clicks DESC`);
     const inter = all(`SELECT e.name, e.k, COUNT(*) n, COUNT(DISTINCT e.sid) sessions FROM events e JOIN sessions s ON s.sid=e.sid
-      WHERE e.name IN ('hero_step_click','faq_open','store_expand','store_map_click','xsell_expand','xsell_pick','case_view','testimonial_view','line_click','xsell_group','xsell_cert')
+      WHERE e.name IN ('hero_step_click','pain_pick','faq_open','store_expand','store_map_click','xsell_expand','xsell_pick','case_view','testimonial_view','line_click','xsell_group','xsell_cert')
         AND ${sw(r.from, r.to)} GROUP BY 1, 2 ORDER BY n DESC LIMIT 30`);
     const scroll = all(`SELECT e.k pct, COUNT(DISTINCT e.sid) n FROM events e JOIN sessions s ON s.sid=e.sid
       WHERE e.name='scroll_depth' AND ${sw(r.from, r.to)} GROUP BY e.k`);

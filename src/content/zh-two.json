@@ -1,0 +1,209 @@
+{
+  "meta": {
+    "lang": "zh-Hant",
+    "site_url": "https://cico.tw",
+    "path": "/two/",
+    "indexable": false,
+    "title": "跑者一對一結構調整｜凝聚運動顧問",
+    "description": "休息、按摩、拉筋都試過，還是一跑就痛？120 分鐘錄下跑姿，當場找出卡點、當場調整。台北／板橋，首次體驗 NT$1,999，免費改期。",
+    "og_image": "assets/img/flow-2.jpg",
+    "page_id": "run-direct-zh",
+    "template": "two",
+    "testimonial_position": "after_cases"
+  },
+  "tracking": {
+    "ga4": "G-55G78H5BPG",
+    "meta_pixel": "2000530050597644",
+    "line_tag": "da896487-a669-425e-be02-3dc3afbd3638"
+  },
+  "links": {
+    "booking_url": "https://s.cicostudio.com/a/20261103-runner",
+    "line_url": "https://lin.ee/Z3YM7gV",
+    "hub_url": "https://portaly.cc/cicostudio",
+    "group_url": "https://cico.pse.is/cs26gc",
+    "cert_url": "https://cico.pse.is/26c00"
+  },
+  "images": {
+    "hero_images": [
+      "flow-1.jpg",
+      "flow-2.jpg",
+      "flow-3.jpg"
+    ],
+    "closing_image": "flow-2.jpg"
+  },
+  "price": {
+    "first": "1,999",
+    "regular": "5,000",
+    "reschedule": "免費改期"
+  },
+  "cases": [
+    {
+      "id": "case01",
+      "spot": "腳踝",
+      "feel": "不適",
+      "source": "脊椎空間",
+      "caption": "全馬跑者・16 次後（9 個月），全馬完賽破 PB",
+      "before_label": "第 1 次",
+      "after_label": "第 16 次",
+      "media": "video",
+      "visible": true
+    },
+    {
+      "id": "case02",
+      "spot": "右肩",
+      "feel": "疼痛",
+      "source": "右肋筋膜",
+      "caption": "HYROX 選手・1 次調整，訓練無痛上強度",
+      "before_label": "第 1 次",
+      "after_label": "當天",
+      "media": "video",
+      "visible": true
+    },
+    {
+      "id": "case03",
+      "spot": "膝蓋",
+      "feel": "卡頓",
+      "source": "脊椎鎖死",
+      "caption": "上班族・1 次調整，出國狂走都不累",
+      "before_label": "第 1 次",
+      "after_label": "當天",
+      "media": "video",
+      "visible": true
+    }
+  ],
+  "stores": [
+    {
+      "name": "台北旗艦店",
+      "lines": [
+        [
+          "板南線",
+          "#0070BD",
+          "#FFFFFF"
+        ]
+      ],
+      "station": "善導寺站 6 號出口",
+      "walk": "步行 8 分鐘",
+      "map_url": "https://maps.app.goo.gl/Krt4iJGSLNFcKaqJA",
+      "city": "台北市",
+      "address": "台北市中山區長安東路一段42號",
+      "id": "taipei"
+    },
+    {
+      "name": "板橋創始店",
+      "lines": [
+        [
+          "板南線",
+          "#0070BD",
+          "#FFFFFF"
+        ],
+        [
+          "環狀線",
+          "#FFDB00",
+          "#2C2B28"
+        ]
+      ],
+      "station": "新埔站 3 號出口",
+      "walk": "步行 2 分鐘",
+      "map_url": "https://maps.app.goo.gl/pUZz4HPXpt5n4fYy9",
+      "city": "新北市板橋區",
+      "address": "新北市板橋區民生路二段232-20號",
+      "id": "banqiao"
+    }
+  ],
+  "faq": [
+    {
+      "q": "調整會痛嗎？跟傳統的整骨推拿一樣嗎？",
+      "a": "怕痛也能安心體驗！\n\n凝聚的結構調整採用柔性手法\n結合運動科學實證方法論，\n不僅安全有效，而且溫和放鬆。\n\n結構思維，是順應身體自然排列\n用不激起本體防衛的漸進方式\n為身體結構撐開空間、乖乖歸位。"
+    },
+    {
+      "q": "我平常有在按摩，還需要做結構調整嗎？",
+      "a": "這取決於你的需求。\n\n如果只是想「短暫放鬆」疲勞\n自己滾滾筒或一般按摩就足夠。\n\n但如果「同一處總是反覆痠痛」\n那代表骨架結構或發力已經歪了。\n\n讓凝聚從結構幫您找出根本原因\n打破反覆緊繃的惡性循環。"
+    },
+    {
+      "q": "「結構訓練」是像健身房一樣的重訓嗎？",
+      "a": "跟重訓完全不一樣！\n\n當身體結構調整歸位後\n如果不改變過往錯誤的動作慣性\n剛理順的骨架很快又會被拉歪。\n\n透過精準的「結構功能整合訓練」\n引導腦神經系統重新學習發力。\n\n這不是為了練壯\n而是為了喚醒沉睡的肌肉\n讓身體記住新的、正確的使用軌跡！"
+    },
+    {
+      "q": "大概需要來幾次凝聚，才會感覺到效果？",
+      "a": "第一次，就有感輕盈！\n\n大多數人「第一次」體驗後\n就能感受變輕盈、更靈活！\n\n若要改變長年問題——\n建議初期安排每週一次調整\n最快一個月就能有感好轉。\n\n體驗後，訓練師會協助評估\n你的身體狀況與運動目標\n規劃最適合的專屬週期計劃。"
+    }
+  ],
+  "trainers": [],
+  "testimonials": [
+    {
+      "quote": "修正髖關節緊繃，讓跑步不再是我的弱項",
+      "name": "潘子易",
+      "role": "亞運鐵人三項國手",
+      "photo": "voice-01.jpg"
+    },
+    {
+      "quote": "跑動效率大幅提高，賽事尾段還能再追越",
+      "name": "江典祐",
+      "role": "亞運鐵人三項國手",
+      "photo": "voice-02.jpg"
+    },
+    {
+      "quote": "凝聚的結構觀念，幫助我保持在最佳狀態",
+      "name": "楊博智",
+      "role": "CT226 男子總冠軍",
+      "photo": "voice-03.jpg"
+    }
+  ],
+  "pain_picks": [
+    {
+      "id": "knee",
+      "label": "膝蓋痛",
+      "title": "跑量一加，膝蓋就痛？",
+      "body": "膝蓋常是「承受」的那一點。第一次來，我們會錄下你的跑姿，看髖、腳踝和軀幹怎麼把力傳到膝蓋，找出讓它反覆受力的位置。",
+      "case": 2,
+      "case_label": "看案例：膝蓋卡頓，問題出在脊椎"
+    },
+    {
+      "id": "calf",
+      "label": "小腿緊繃",
+      "title": "小腿拉了又緊、按了又緊？",
+      "body": "一直緊的地方，可能是在替別處出力。我們會看你落地和推蹬的力線，找出哪裡沒在工作，讓小腿不用一直代償。"
+    },
+    {
+      "id": "back",
+      "label": "下背痠",
+      "title": "跑完下背痛好幾天？",
+      "body": "下背痠，問題不一定在下背。我們會看骨盆、髖和胸廓在跑步時怎麼轉動，找出把壓力堆到下背的那條線。"
+    },
+    {
+      "id": "hip",
+      "label": "髖打不開",
+      "title": "步幅打不開、越跑越吃力？",
+      "body": "這多半是「空間擠壓」：拉筋只能鬆一下，結構沒撐開就會緊回來。我們先徒手撐開，再用訓練讓它留得住。"
+    },
+    {
+      "id": "pace",
+      "label": "後段掉速",
+      "title": "練量越加越大，成績卻卡住？",
+      "body": "不一定是練不夠，可能是發力在漏。跑姿錄影會讓你看到哪一步在浪費力氣，調整後再把新的發力方式練進跑步。",
+      "case": 0,
+      "case_label": "看案例：全馬跑者 16 次後破 PB"
+    }
+  ],
+  "compare": [
+    [
+      "休息",
+      "跑回來又痛",
+      "找出讓同一處反覆受力的結構"
+    ],
+    [
+      "按摩",
+      "舒服幾天又緊",
+      "處理整條力線，不只痛的那一點"
+    ],
+    [
+      "拉筋",
+      "很快又緊回來",
+      "調整結構後，再用訓練讓它留住"
+    ]
+  ],
+  "trust": {
+    "photo": "voice-01.jpg",
+    "text": "亞運鐵人三項國手潘子易也在這裡調整"
+  }
+}

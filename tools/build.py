@@ -116,6 +116,59 @@ def r_hero_extra(c):
     return out
 
 
+def r_pain_chips(c):
+    """直球版首屏的「你卡在哪？」快選：點了展開下方對應的解答卡並捲過去（記錄 pain_pick）。"""
+    picks = c.get('pain_picks') or []
+    return ''.join(
+        f'<button type="button" class="pain-chip" data-pain="{esc(p["id"])}">{esc(p["label"])}</button>'
+        for p in picks)
+
+
+def r_pain_answers(c):
+    """每個痛點一張可展開的卡：我們怎麼看這個痛、相關案例、預約按鈕。"""
+    rows = []
+    for i, p in enumerate(c.get('pain_picks') or []):
+        top = '' if i == 0 else 'border-top: 1px solid #E4E0D7; '
+        case = ''
+        if p.get('case') is not None:
+            case = (f'<button type="button" class="pain-case" data-go-case="{int(p["case"])}" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 14px; padding: 0; border: 0; background: none; color: #7E6139; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px">'
+                    f'{esc(p["case_label"])}{CH}</button>')
+        rows.append(
+            f'<details class="pain" data-pain="{esc(p["id"])}" style="{top}">'
+            f'<summary style="display: flex; align-items: center; gap: 12px; padding: 18px 18px; min-height: 44px; cursor: pointer; list-style: none">'
+            f'<span style="flex: 0 0 auto; padding: 3px 10px; border-radius: 999px; background: #F6E1D9; color: #A44A33; font-size: 12px; font-weight: 700">{esc(p["label"])}</span>'
+            f'<span style="flex: 1; font-size: 16px; font-weight: 900; line-height: 1.4">{esc(p["title"])}</span>'
+            f'<svg class="store-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></summary>'
+            f'<div style="padding: 0 18px 20px">'
+            f'<p style="margin: 0; font-size: 15px; line-height: 1.75; color: #45433E">{esc(p["body"])}</p>{case}'
+            f'<a href="<!--@booking_url-->" data-cta="pain" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 54px; margin-top: 16px; border-radius: 27px; background: #2F6B55; color: #F5F4F1"><span style="font-size: 15px; font-weight: 700">預約，把你的卡點找出來</span><span style="font-size: 11px; color: #D6E4DC">120 分鐘・NT${esc(c["price"]["first"])}・{esc(c["price"]["reschedule"])}</span></a>'
+            f'</div></details>')
+    return '\n      '.join(rows)
+
+
+def r_compare(c):
+    """你試過的方法 vs 凝聚：每列一張卡（手機上比三欄表格好讀）。"""
+    rows = c.get('compare') or []
+    cards = ''.join(
+        f'<div style="padding: 16px 18px; {"" if i == 0 else "border-top: 1px solid #E4E0D7; "}">'
+        f'<div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 17px; font-weight: 900">{esc(a)}</span>'
+        f'<span style="font-size: 14px; color: #A44A33"><s style="text-decoration-color: rgba(164,74,51,.5)">{esc(b)}</s></span></div>'
+        f'<div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 8px; font-size: 15px; line-height: 1.6; color: #2C2B28">'
+        f'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2F6B55" stroke-width="2.5" aria-hidden="true" style="flex: 0 0 18px; margin-top: 3px"><path d="M5 12l5 5L20 7"></path></svg>'
+        f'<span><b style="color: #2F6B55">凝聚：</b>{esc(d)}</span></div></div>'
+        for i, (a, b, d) in enumerate(rows))
+    return f'<div style="margin-top: 24px; border-radius: 22px; background: #FBFAF8; border: 1px solid #E4E0D7; overflow: hidden">{cards}</div>'
+
+
+def r_trust(c):
+    t = c.get('trust') or {}
+    if not t:
+        return ''
+    return (f'<div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-size: 13px; color: #E4E0D7">'
+            f'<img src="assets/img/{esc(t["photo"])}" alt="" width="28" height="28" style="width: 28px; height: 28px; border-radius: 14px; object-fit: cover; box-shadow: 0 0 0 2px rgba(245,244,241,.35)">'
+            f'{esc(t["text"])}</div>')
+
+
 def r_cross_sell(c):
     """不只一對一：團班課／認證課。有「推薦課程」時做成下拉選單（點開在頁面上展開，不跳出）；沒有就是直接連結。"""
     L = c['links']
@@ -278,6 +331,8 @@ def build(name='zh'):
         'cases': r_cases(c), 'case_dots': r_case_dots(c), 'faq': r_faq(c), 'stores': r_stores(c), 'cross_sell': r_cross_sell(c), 'hero_extra': r_hero_extra(c),
         'hero_class': (' class="hero-compact"' if (c.get('hero') or {}).get('steps') else ''),
         'trainers': r_trainers(c), 'hero_slides': r_hero_slides(c),
+        'pain_chips': r_pain_chips(c), 'pain_answers': r_pain_answers(c), 'compare': r_compare(c), 'trust': r_trust(c),
+        'price_first': esc(c['price']['first']),
         'testimonial': r_testimonial(c) if pos == 'after_price' else '',
         'testimonial_early': r_testimonial(c) if pos == 'after_cases' else '',
         'testimonial_after_wall': r_testimonial(c) if pos == 'after_wall' else '',
@@ -299,12 +354,13 @@ def build(name='zh'):
     os.makedirs(os.path.dirname(os.path.join(ROOT, 'site', rel)), exist_ok=True)
     open(os.path.join(ROOT, 'site', rel), 'w', encoding='utf-8').write(out)
     print('built site/' + rel, len(out), 'bytes')
-    return c['meta']['site_url'].rstrip('/') + c['meta']['path']
+    # 不開放索引的頁（廣告測試頁）不放進 sitemap
+    return c['meta']['site_url'].rstrip('/') + c['meta']['path'] if c['meta'].get('indexable') else None
 
 
 def build_all():
     names = sorted(f[:-5] for f in os.listdir(os.path.join(ROOT, 'src', 'content')) if f.endswith('.json'))
-    urls = [build(n) for n in names]
+    urls = [u for u in (build(n) for n in names) if u]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += ''.join(f'  <url><loc>{u}</loc></url>\n' for u in urls) + '</urlset>\n'
     open(os.path.join(ROOT, 'site', 'sitemap.xml'), 'w', encoding='utf-8').write(sm)

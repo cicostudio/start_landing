@@ -11,13 +11,14 @@
 const PROTOCOL = '2025-06-18';
 const SUPPORTED = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
-const SECTIONS = { hero: '首屏', pain_wall: '痛點牆', testimonials: '選手證言', cases: '真實案例', tight_tangled: '緊與卡', process: '體驗流程', price: '價格', stores: '門市', cross_sell: '其他課程', faq: '常見問題', closing: '結尾' };
+const SECTIONS = { hero: '首屏', pain_wall: '痛點牆', testimonials: '選手證言', cases: '真實案例', tight_tangled: '緊與卡', process: '體驗流程', price: '價格', stores: '門市', cross_sell: '其他課程', faq: '常見問題', closing: '結尾', pain_answer: '痛點解答', compare: '方法對照' };
 const ORDER = {
   'one-on-one-zh': ['hero', 'pain_wall', 'cases', 'tight_tangled', 'process', 'price', 'testimonials', 'stores', 'cross_sell', 'faq', 'closing'],
   'run-zh': ['hero', 'pain_wall', 'testimonials', 'cases', 'tight_tangled', 'process', 'price', 'stores', 'cross_sell', 'faq', 'closing'],
+  'run-direct-zh': ['hero', 'pain_answer', 'compare', 'cases', 'testimonials', 'price', 'stores', 'faq', 'closing'],
 };
 const CH = { meta_paid: 'Meta 廣告', meta_organic: 'FB／IG 自然', line: 'LINE', google: 'Google 自然', google_paid: 'Google 廣告', direct: '直接輸入', other: '其他網站' };
-const CTA = { hero: '首屏按鈕', price: '價格區按鈕', sticky: '底部常駐列', 'store-taipei': '台北店卡片', 'store-banqiao': '板橋店卡片' };
+const CTA = { hero: '首屏按鈕', price: '價格區按鈕', sticky: '底部常駐列', 'store-taipei': '台北店卡片', 'store-banqiao': '板橋店卡片', pain: '痛點解答卡', cases: '案例下方按鈕' };
 
 const dateArg = { type: 'string', description: 'YYYY-MM-DD（台灣時間）。省略時預設近 7 天（含今天）。' };
 const TOOLS = [
@@ -35,7 +36,7 @@ const TOOLS = [
       properties: {
         line: { type: 'string', enum: ['one', 'group', 'cert'], description: 'one=一對一（預設）, group=團班課, cert=認證課／工作坊／講座' },
         from: dateArg, to: dateArg,
-        page: { type: 'string', description: '只看某一頁（如 one-on-one-zh、run-zh）。省略＝這條產品線全部頁面。' },
+        page: { type: 'string', description: '只看某一頁（如 one-on-one-zh、run-zh、run-direct-zh）。省略＝這條產品線全部頁面。' },
         channel: { type: 'string', enum: ['meta_paid', 'meta_organic', 'line', 'google', 'google_paid', 'direct', 'other'], description: '只看某個流量管道。省略＝全部。' },
       },
     },
