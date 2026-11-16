@@ -28,11 +28,14 @@ export const LINES = {
 const lineOf = (q) => LINES[q.line] ? q.line : 'one';
 const linesInfo = (env) => Object.fromEntries(Object.entries(LINES).map(([k, l]) => [k, { name: l.name, pages: l.pages.map((p) => ({ id: p, path: PAGES[p] })), ads: !!(env.META_ADS_TOKEN && env[l.acct]) }]));
 const SESSION_DAYS = 30;
+const REDIRECTS = { '/run': '/two/', '/run/': '/two/', '/run/index.html': '/two/' };
 
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
     const p = url.pathname;
+    // 跑者版流量全部改看直球版（/two/）：保留廣告參數（utm、fbclid…），302 方便日後改回
+    if (REDIRECTS[p]) return Response.redirect(url.origin + REDIRECTS[p] + url.search, 302);
     if (p === '/api/e' && req.method === 'POST') return collect(req, env);
     if (p === '/api/e' && req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors() });
     if (p === '/api/login' && req.method === 'POST') return login(req, env);

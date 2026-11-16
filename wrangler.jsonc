@@ -7,7 +7,7 @@
     "directory": "./site",
     "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
-    "run_worker_first": ["/api/*", "/mcp/*"]
+    "run_worker_first": ["/api/*", "/mcp/*", "/run", "/run/*"]
   },
   // 數據存在 Durable Object 內建的 SQLite，部署時自動建立，不用另外開資料庫
   "durable_objects": {
