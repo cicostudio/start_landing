@@ -46,35 +46,6 @@
     });
   });
 
-  // ---- 直球版：首屏「你卡在哪？」快選 → 展開對應解答卡並捲過去（算互動）----
-  function openPain(id, from) {
-    var d = $('details.pain[data-pain="' + id + '"]');
-    if (!d) return;
-    $$('details.pain').forEach(function (o) { if (o !== d) o.open = false; });
-    d.dataset.from = from; d.open = true;
-    $$('.pain-chip').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-pain') === id ? 'true' : 'false'); });
-    d.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
-    d.classList.remove('flash'); void d.offsetWidth; d.classList.add('flash');
-  }
-  $$('.pain-chip').forEach(function (b) {
-    b.setAttribute('aria-pressed', 'false');
-    b.addEventListener('click', function () { openPain(b.getAttribute('data-pain'), 'hero'); });
-  });
-  $$('details.pain').forEach(function (d) {
-    d.addEventListener('toggle', function () {
-      if (!d.open) return;
-      track('pain_pick', { pain: d.getAttribute('data-pain'), from: d.dataset.from || 'list' });
-      d.dataset.from = '';
-    });
-  });
-  $$('.pain-case').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var t = document.querySelector('section[data-section="cases"]');
-      if (t) t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-      if (window.NJ_caseGo) window.NJ_caseGo(+b.getAttribute('data-go-case'));
-    });
-  });
-
   // ---- store cards: expand in place (no leaving the page) ----
   $$('details.store').forEach(function (d) {
     d.addEventListener('toggle', function () {
@@ -165,7 +136,6 @@
     } else { visible = true; }
     timer = setInterval(tick, TICK);   // reduced motion: slides change without the sliding transition (CSS)
     paint();
-    window.NJ_caseGo = function (i) { go(i, true); };
   }
 
   // ---- testimonials: tap an avatar to switch; auto-rotates while on screen ----

@@ -22,16 +22,20 @@ section[data-section="hero"].hero-direct{height:auto!important;min-height:0}
 .hero-direct .hd-photo{position:relative;height:clamp(150px,26svh,260px);overflow:hidden}
 .hero-direct .hero-slides{position:absolute;inset:0}
 .hero-direct .hero-slide{object-position:50% 28%}
-.pain-chip{display:inline-flex;align-items:center;height:40px;padding:0 15px;border-radius:20px;border:1.5px solid rgba(245,244,241,.42);background:rgba(245,244,241,.08);color:#F5F4F1;font-size:14px;font-weight:700;transition:background .2s ease,border-color .2s ease}
-.pain-chip:hover,.pain-chip:active{background:rgba(245,244,241,.18)}
-.pain-chip[aria-pressed="true"]{background:#F2A48F;border-color:#F2A48F;color:#2C2B28}
-details.pain summary::-webkit-details-marker{display:none}
-details.pain[open] .store-chev{transform:rotate(180deg)}
-details.pain[open]{background:#FFF8F4}
-details.pain[open] summary{padding-bottom:10px!important}
-@keyframes painFlash{0%{box-shadow:inset 0 0 0 2px #F2A48F}100%{box-shadow:inset 0 0 0 2px rgba(242,164,143,0)}}
-details.pain.flash{animation:painFlash 1.6s ease-out}
-@media (prefers-reduced-motion: reduce){.pain-chip{transition:none}details.pain.flash{animation:none}}
+.cmp{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.cmp-card{border-radius:22px;background:#FFFFFF;border:1px solid #E4E0D7;box-shadow:0 8px 24px rgba(126,97,57,.08);overflow:hidden}
+.cmp-top{display:flex;align-items:center;gap:12px;padding:16px 16px 14px}
+.cmp-ico{flex:0 0 44px;height:44px;border-radius:22px;background:#F3EEE6;display:flex;align-items:center;justify-content:center}
+.cmp-name{flex:1;min-width:0}
+.cmp-name small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8A857B}
+.cmp-name b{display:block;font-size:20px;font-weight:900;line-height:1.25}
+.cmp-res{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;background:#F9E7E0;color:#A44A33;font-size:13px;font-weight:700}
+.cmp-fix{display:flex;align-items:flex-start;gap:10px;padding:14px 16px 16px;background:#EEF4F0;border-top:1px dashed #C9DDD1;font-size:15px;line-height:1.6;color:#2C2B28}
+.cmp-fix b{color:#2F6B55;margin-right:6px}
+.cmp-way{margin-top:16px;padding:24px 18px 20px;border-radius:24px;background:#1C1B19;color:#F5F4F1}
+.cmp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:18px}
+.cmp-step{position:relative;padding:12px 8px;border-radius:14px;background:rgba(245,244,241,.08);border:1px solid rgba(245,244,241,.16)}
+.cmp-step+.cmp-step::before{content:"";position:absolute;left:-7px;top:50%;width:8px;height:1.5px;background:#7FC3A1}
 </style>
 </head>
 <body>
@@ -45,20 +49,11 @@ details.pain.flash{animation:painFlash 1.6s ease-out}
       <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(245,244,241,0.16); border: 1px solid rgba(245,244,241,0.28); font-size: 12px; font-weight: 700"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 3px; background: #F2A48F"></span>跑者一對一・台北／板橋</span>
       <h1 style="margin: 12px 0 0; font-size: 34px; font-weight: 900; line-height: 1.12; letter-spacing: -0.01em">休息、按摩、拉筋<br>都試過了，<br><span style="color: #F2A48F">還是一跑就痛？</span></h1>
       <p style="margin: 12px 0 0; font-size: 15px; line-height: 1.6; color: #E4E0D7">痛的地方不一定是源頭，卡住的結構才是。<br>120 分鐘錄下跑姿，當場找出卡點、當場調整。</p>
-      <div style="margin-top: 18px; font-size: 13px; font-weight: 700; color: #C9C5BC">你卡在哪？點一下看我們怎麼找</div>
-      <div role="group" aria-label="選擇你的困擾" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px"><!--@pain_chips--></div>
       <a href="<!--@booking_url-->" data-cta="hero" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60px; margin-top: 20px; border-radius: 30px; background: #2F6B55; color: #F5F4F1"><span style="font-size: 17px; font-weight: 700">預約首次體驗 NT$<!--@price_first--></span><span style="font-size: 12px; color: #D6E4DC"><s>原價 NT$<!--@price_regular--></s>・120 分鐘・<!--@reschedule--></span></a>
       <!--@trust-->
     </div>
   </section>
-  <section data-section="pain_answer" id="pain-answer" style="padding: 56px 16px 0">
-    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #7E6139">先找原因，再談怎麼練</div>
-    <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">痛的那一點，<br>通常不是源頭。</h2>
-    <div style="margin-top: 24px; border-radius: 22px; background: #FBFAF8; border: 1px solid #E4E0D7; overflow: hidden">
-      <!--@pain_answers-->
-    </div>
-  </section>
-  <section data-section="compare" style="padding: 80px 16px 0">
+  <section data-section="compare" style="padding: 56px 16px 0">
     <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #7E6139">你試過的方法</div>
     <h2 style="margin: 8px 0 0; font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em">不是方法沒用，<br>是它們只處理那一點。</h2>
     <!--@compare-->

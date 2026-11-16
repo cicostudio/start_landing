@@ -116,48 +116,39 @@ def r_hero_extra(c):
     return out
 
 
-def r_pain_chips(c):
-    """直球版首屏的「你卡在哪？」快選：點了展開下方對應的解答卡並捲過去（記錄 pain_pick）。"""
-    picks = c.get('pain_picks') or []
-    return ''.join(
-        f'<button type="button" class="pain-chip" data-pain="{esc(p["id"])}">{esc(p["label"])}</button>'
-        for p in picks)
-
-
-def r_pain_answers(c):
-    """每個痛點一張可展開的卡：我們怎麼看這個痛、相關案例、預約按鈕。"""
-    rows = []
-    for i, p in enumerate(c.get('pain_picks') or []):
-        top = '' if i == 0 else 'border-top: 1px solid #E4E0D7; '
-        case = ''
-        if p.get('case') is not None:
-            case = (f'<button type="button" class="pain-case" data-go-case="{int(p["case"])}" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 14px; padding: 0; border: 0; background: none; color: #7E6139; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px">'
-                    f'{esc(p["case_label"])}{CH}</button>')
-        rows.append(
-            f'<details class="pain" data-pain="{esc(p["id"])}" style="{top}">'
-            f'<summary style="display: flex; align-items: center; gap: 12px; padding: 18px 18px; min-height: 44px; cursor: pointer; list-style: none">'
-            f'<span style="flex: 0 0 auto; padding: 3px 10px; border-radius: 999px; background: #F6E1D9; color: #A44A33; font-size: 12px; font-weight: 700">{esc(p["label"])}</span>'
-            f'<span style="flex: 1; font-size: 16px; font-weight: 900; line-height: 1.4">{esc(p["title"])}</span>'
-            f'<svg class="store-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></summary>'
-            f'<div style="padding: 0 18px 20px">'
-            f'<p style="margin: 0; font-size: 15px; line-height: 1.75; color: #45433E">{esc(p["body"])}</p>{case}'
-            f'<a href="<!--@booking_url-->" data-cta="pain" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 54px; margin-top: 16px; border-radius: 27px; background: #2F6B55; color: #F5F4F1"><span style="font-size: 15px; font-weight: 700">預約，把你的卡點找出來</span><span style="font-size: 11px; color: #D6E4DC">120 分鐘・NT${esc(c["price"]["first"])}・{esc(c["price"]["reschedule"])}</span></a>'
-            f'</div></details>')
-    return '\n      '.join(rows)
+CMP_ICONS = {
+    'rest': '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path>',
+    'massage': '<path d="M8 13V5.5a1.5 1.5 0 013 0V12M11 11V4.5a1.5 1.5 0 013 0V12M14 11.5V6a1.5 1.5 0 013 0v7c0 4-2.5 7-6 7s-5-2-6.5-4.5L3 12.5a1.5 1.5 0 012.5-1.5L8 13"></path>',
+    'stretch': '<circle cx="15" cy="4.5" r="2"></circle><path d="M14 8l-3.5 6 4 3v5M10.5 14L5 16M14 8l5.5 3"></path>',
+}
+LOOP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A44A33" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>'
+CHECK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2F6B55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: 0 0 18px; margin-top: 3px"><path d="M5 12l5 5L20 7"></path></svg>'
 
 
 def r_compare(c):
-    """你試過的方法 vs 凝聚：每列一張卡（手機上比三欄表格好讀）。"""
+    """你試過的方法 vs 凝聚：每個方法一張卡（上：試過的方法與結果，下：凝聚的做法），最後一張深色卡收在凝聚的三步驟。"""
     rows = c.get('compare') or []
-    cards = ''.join(
-        f'<div style="padding: 16px 18px; {"" if i == 0 else "border-top: 1px solid #E4E0D7; "}">'
-        f'<div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 17px; font-weight: 900">{esc(a)}</span>'
-        f'<span style="font-size: 14px; color: #A44A33"><s style="text-decoration-color: rgba(164,74,51,.5)">{esc(b)}</s></span></div>'
-        f'<div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 8px; font-size: 15px; line-height: 1.6; color: #2C2B28">'
-        f'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2F6B55" stroke-width="2.5" aria-hidden="true" style="flex: 0 0 18px; margin-top: 3px"><path d="M5 12l5 5L20 7"></path></svg>'
-        f'<span><b style="color: #2F6B55">凝聚：</b>{esc(d)}</span></div></div>'
-        for i, (a, b, d) in enumerate(rows))
-    return f'<div style="margin-top: 24px; border-radius: 22px; background: #FBFAF8; border: 1px solid #E4E0D7; overflow: hidden">{cards}</div>'
+    if not rows:
+        return ''
+    cards = ''
+    for r in rows:
+        ico = (f'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7E6139" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+               f'{CMP_ICONS.get(r.get("icon"), "")}</svg>')
+        cards += (f'<div class="cmp-card"><div class="cmp-top"><span class="cmp-ico">{ico}</span>'
+                  f'<span class="cmp-name"><small>你試過</small><b>{esc(r["name"])}</b></span>'
+                  f'<span class="cmp-res">{LOOP}{esc(r["result"])}</span></div>'
+                  f'<div class="cmp-fix">{CHECK}<span><b>凝聚</b>{esc(r["fix"])}</span></div></div>')
+    way = c.get('compare_way')
+    if way:
+        steps = ''.join(
+            f'<div class="cmp-step"><span style="display: block; font-size: 11px; font-weight: 700; color: #9FC9B4">{esc(n)}</span>'
+            f'<span style="display: block; font-size: 15px; font-weight: 900; margin-top: 2px">{esc(t)}</span>'
+            f'<span style="display: block; font-size: 12px; color: #C9C5BC; margin-top: 1px">{esc(sub)}</span></div>'
+            for n, t, sub in way['steps'])
+        cards += (f'<div class="cmp-way"><div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #9FC9B4">{esc(way["eyebrow"])}</div>'
+                  f'<div style="margin-top: 8px; font-size: 21px; font-weight: 900; line-height: 1.4">{way["title"]}</div>'
+                  f'<div role="list" class="cmp-steps">{steps}</div></div>')
+    return f'<div class="cmp">{cards}</div>'
 
 
 def r_trust(c):
@@ -331,7 +322,7 @@ def build(name='zh'):
         'cases': r_cases(c), 'case_dots': r_case_dots(c), 'faq': r_faq(c), 'stores': r_stores(c), 'cross_sell': r_cross_sell(c), 'hero_extra': r_hero_extra(c),
         'hero_class': (' class="hero-compact"' if (c.get('hero') or {}).get('steps') else ''),
         'trainers': r_trainers(c), 'hero_slides': r_hero_slides(c),
-        'pain_chips': r_pain_chips(c), 'pain_answers': r_pain_answers(c), 'compare': r_compare(c), 'trust': r_trust(c),
+        'compare': r_compare(c), 'trust': r_trust(c),
         'price_first': esc(c['price']['first']),
         'testimonial': r_testimonial(c) if pos == 'after_price' else '',
         'testimonial_early': r_testimonial(c) if pos == 'after_cases' else '',

@@ -297,16 +297,16 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
   // ---------- 名稱對照 ----------
-  var SECTIONS = { hero: '首屏', pain_wall: '痛點牆', testimonials: '選手證言', cases: '真實案例', tight_tangled: '緊與卡', process: '體驗流程', price: '價格', stores: '門市', cross_sell: '其他課程', faq: '常見問題', closing: '結尾', pain_answer: '痛點解答', compare: '方法對照' };
+  var SECTIONS = { hero: '首屏', pain_wall: '痛點牆', testimonials: '選手證言', cases: '真實案例', tight_tangled: '緊與卡', process: '體驗流程', price: '價格', stores: '門市', cross_sell: '其他課程', faq: '常見問題', closing: '結尾', compare: '方法對照' };
   var ORDER = {
     'one-on-one-zh': ['hero', 'pain_wall', 'cases', 'tight_tangled', 'process', 'price', 'testimonials', 'stores', 'cross_sell', 'faq', 'closing'],
     'run-zh': ['hero', 'pain_wall', 'testimonials', 'cases', 'tight_tangled', 'process', 'price', 'stores', 'cross_sell', 'faq', 'closing'],
-    'run-direct-zh': ['hero', 'pain_answer', 'compare', 'cases', 'testimonials', 'price', 'stores', 'faq', 'closing']
+    'run-direct-zh': ['hero', 'compare', 'cases', 'testimonials', 'price', 'stores', 'faq', 'closing']
   };
   var CH = { meta_paid: 'Meta 廣告', meta_organic: 'FB／IG 自然', line: 'LINE', google: 'Google 自然', google_paid: 'Google 廣告', direct: '直接輸入', other: '其他網站' };
-  var CTA = { hero: '首屏按鈕', price: '價格區按鈕', sticky: '底部常駐列', 'store-taipei': '台北店卡片', 'store-banqiao': '板橋店卡片', pain: '痛點解答卡', cases: '案例下方按鈕' };
+  var CTA = { hero: '首屏按鈕', price: '價格區按鈕', sticky: '底部常駐列', 'store-taipei': '台北店卡片', 'store-banqiao': '板橋店卡片', cases: '案例下方按鈕' };
   var DEV = { mobile: '手機', desktop: '電腦', tablet: '平板', '': '未知' };
-  var INTER = { hero_step_click: '首屏步驟點擊', pain_pick: '痛點快選', faq_open: 'FAQ 展開', store_expand: '門市展開', store_map_click: '門市地圖', xsell_expand: '課程分類展開', xsell_pick: '推薦課程點擊', case_view: '案例切換', testimonial_view: '證言切換', line_click: 'LINE 客服', xsell_group: '團班課頁', xsell_cert: '認證課頁' };
+  var INTER = { hero_step_click: '首屏步驟點擊', faq_open: 'FAQ 展開', store_expand: '門市展開', store_map_click: '門市地圖', xsell_expand: '課程分類展開', xsell_pick: '推薦課程點擊', case_view: '案例切換', testimonial_view: '證言切換', line_click: 'LINE 客服', xsell_group: '團班課頁', xsell_cert: '認證課頁' };
 
   // ---------- 格式 ----------
   var nf = new Intl.NumberFormat('zh-TW');
