@@ -5,7 +5,7 @@
  *   POST /api/e        頁面上的行為事件（第一方收集，不怕廣告攔截器）
  *   POST /api/login    後台登入（單一密碼，存在 Cloudflare 祕密 ADMIN_PASSWORD）
  *   POST /api/logout
- *   GET  /api/stats    後台數據（需登入）
+ *   GET  /api/stats    後台數據（需登入。預設截止到昨天；include_today=1 才含今天，並快取 10 分鐘）
  *
  * 資料存在 Durable Object（內建 SQLite），不需要另外建資料庫。
  *
@@ -16,6 +16,14 @@
  */
 import { DurableObject } from 'cloudflare:workers';
 import { handleMcp } from './mcp.js';
+import {
+  addDays, dayOf, resolveRange, rebuildDayFromDb, statsFromRollupRows, dataNote,
+  TODAY_CACHE_MS, HISTORY_CACHE_MS, BACKFILL_GAP_MS,
+  YDAY_GRACE_MS, CHANNELS, yesterdayNeedsRebuild, nextIdleDelay,
+  SQL_HAS_SESSION, SQL_HAS_CONV,
+} from './rollup.js';
+
+export { dayOf };
 
 // 頁面（page_id → 網址）。新增頁面時在這裡加一行，並在 LINES 指定它屬於哪條產品線。
 const PAGES = { 'one-on-one-zh': '/one/', 'run-zh': '/run/', 'run-direct-zh': '/two/', 'three-zh': '/three/' };
@@ -115,30 +123,8 @@ async function authed(req, env) {
   return same(sig, await hmac(env.ADMIN_PASSWORD, exp));
 }
 
-// ---------------------------------------------------------------------------
-// 日期工具（台灣時間）
-// ---------------------------------------------------------------------------
-const TZ = 8 * 3600e3;
-export const dayOf = (ts) => new Date(ts + TZ).toISOString().slice(0, 10);
-const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
-const span = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5) + 1;
-function range(q) {
-  const today = dayOf(Date.now());
-  const to = /^\d{4}-\d{2}-\d{2}$/.test(q.to || '') ? q.to : today;
-  const from = /^\d{4}-\d{2}-\d{2}$/.test(q.from || '') ? q.from : addDays(to, -6);
-  const n = span(from, to);
-  return { from, to, n, pfrom: addDays(from, -n), pto: addDays(from, -1) };
-}
-
-// 流量來源 → 管道（後台用的分類；src/med 欄位在 SQL 裡被替換成實際欄名）
-const PAID = `(lower(med) IN ('cpc','ppc','paid','ad','ads','cpm','sponsored','paid_social','paidsocial','paid-social') OR lower(med) LIKE 'paid%')`;
-const CHANNEL_SQL = `CASE
-  WHEN (lower(src) LIKE '%facebook%' OR lower(src) LIKE '%instagram%' OR lower(src) IN ('fb','ig','meta'))
-    THEN CASE WHEN ${PAID} THEN 'meta_paid' ELSE 'meta_organic' END
-  WHEN lower(src) LIKE '%google%' THEN CASE WHEN ${PAID} THEN 'google_paid' ELSE 'google' END
-  WHEN lower(src) LIKE '%line%' THEN 'line'
-  WHEN src IS NULL OR src = '' OR src = '(direct)' THEN 'direct'
-  ELSE 'other' END`;
+// 日期與管道分類在 rollup.js。預設期間截止到昨天；include_today=1 才含今天。
+const range = (q) => resolveRange(q || {});
 
 // ---------------------------------------------------------------------------
 // Durable Object：SQLite 存所有事件
@@ -147,6 +133,16 @@ export class Analytics extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     this.sql = ctx.storage.sql;
+    ctx.blockConcurrencyWhile(async () => {
+      this.migrate();
+      // 物件被鬧鐘叫醒時，建構式會先跑、getAlarm() 會是 null。這裡補一個鬧鐘不會取消
+      // alarm() 結尾再設定的下一次時間（後寫入的為準）。
+      const existing = await ctx.storage.getAlarm();
+      if (existing == null) await ctx.storage.setAlarm(Date.now() + 5000);
+    });
+  }
+
+  migrate() {
     this.sql.exec(`
       CREATE TABLE IF NOT EXISTS sessions(
         sid TEXT PRIMARY KEY, vid TEXT, page TEXT, day TEXT, start INTEGER, last INTEGER,
@@ -159,6 +155,9 @@ export class Analytics extends DurableObject {
       CREATE TABLE IF NOT EXISTS conv(id TEXT PRIMARY KEY, ts INTEGER, day TEXT, kind TEXT, vid TEXT, page TEXT, cta TEXT, src TEXT, med TEXT, camp TEXT);
       CREATE INDEX IF NOT EXISTS c_day ON conv(day, kind);
       CREATE TABLE IF NOT EXISTS cache(k TEXT PRIMARY KEY, t INTEGER, v TEXT);
+      CREATE TABLE IF NOT EXISTS rollup(
+        day TEXT PRIMARY KEY, built INTEGER NOT NULL DEFAULT 0, built_at INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT);
     `);
   }
 
@@ -168,6 +167,10 @@ export class Analytics extends DurableObject {
 
   async ingest(list) {
     const now = Date.now();
+    if (!this._firstChecked) {
+      if (!this.metaGet('first_day')) this.ensureFirstDay();
+      this._firstChecked = true;
+    }
     for (const e of list) {
       if (!e || typeof e !== 'object') continue;
       const n = String(e.n || '').slice(0, 40);
@@ -222,84 +225,133 @@ export class Analytics extends DurableObject {
   }
   cacheSet(k, v) { this.sql.exec(`INSERT OR REPLACE INTO cache(k,t,v) VALUES(?,?,?)`, k, Date.now(), JSON.stringify(v)); }
 
-  // ---- 後台數據 -------------------------------------------------------------
+  dbAll(sql, ...args) { return this.sql.exec(sql, ...args).toArray(); }
+  metaGet(k) {
+    const r = this.sql.exec(`SELECT v FROM meta WHERE k=?`, k).toArray()[0];
+    return r ? r.v : null;
+  }
+  metaSet(k, v) {
+    this.sql.exec(`INSERT INTO meta(k, v) VALUES(?, ?) ON CONFLICT(k) DO UPDATE SET v=excluded.v`, k, String(v));
+  }
+  ensureFirstDay() {
+    const cur = this.metaGet('first_day');
+    if (cur) return cur;
+    const s = this.sql.exec(`SELECT day FROM sessions ORDER BY day LIMIT 1`).toArray()[0];
+    const c = this.sql.exec(`SELECT day FROM conv ORDER BY day LIMIT 1`).toArray()[0];
+    const days = [s && s.day, c && c.day].filter(Boolean).sort();
+    if (!days.length) return null;
+    this.metaSet('first_day', days[0]);
+    return days[0];
+  }
+  saveRollup(day, built, now) {
+    const doc = rebuildDayFromDb({ all: (sql, ...a) => this.dbAll(sql, ...a) }, day);
+    this.sql.exec(
+      `INSERT INTO rollup(day, built, built_at, data) VALUES(?,?,?,?)
+       ON CONFLICT(day) DO UPDATE SET built=excluded.built, built_at=excluded.built_at, data=excluded.data`,
+      day, built ? 1 : 0, now, JSON.stringify(doc));
+  }
+  // 今天的即時快照全站共用，10 分鐘內不重算（不同篩選只是把同一包再加總）。
+  refreshToday(now, today) {
+    const at = Number(this.metaGet('today_at') || 0);
+    if (at && now - at < TODAY_CACHE_MS && this.sql.exec(`SELECT day FROM rollup WHERE day=?`, today).toArray()[0]) return;
+    this.saveRollup(today, 0, now);
+    this.metaSet('today_at', String(now));
+  }
+  ensureYesterday(now, yesterday) {
+    const row = this.sql.exec(`SELECT built FROM rollup WHERE day=?`, yesterday).toArray()[0];
+    if (row && row.built) return;
+    this.saveRollup(yesterday, 1, now);
+  }
+  backfillPending(today) {
+    if (this.metaGet('bf_done') === '1') return 0;
+    const first = this.metaGet('first_day') || this.ensureFirstDay();
+    if (!first) return 0;
+    let cursor = this.metaGet('bf_next');
+    if (!cursor) cursor = addDays(addDays(today, -1), -1);
+    if (cursor < first) return 0;
+    return Math.round((Date.parse(cursor + 'T00:00:00Z') - Date.parse(first + 'T00:00:00Z')) / 864e5) + 1;
+  }
+  dayHasRaw(day) {
+    return !!(this.dbAll(SQL_HAS_SESSION, day)[0] || this.dbAll(SQL_HAS_CONV, day)[0]);
+  }
+  sessionTouchedAfter(day, ts) {
+    const row = this.dbAll(`SELECT MAX(last) AS m FROM sessions INDEXED BY s_day WHERE day=?`, day)[0];
+    return !!(row && row.m > ts);
+  }
+
+  // ---- 後台數據：只讀每日彙總。今天要 include_today 才算，並快取 10 分鐘。----
   stats(q) {
-    const r = range(q);
+    q = q || {};
+    const r = resolveRange(q);
     const pages = (LINES[q.line] || LINES.one).pages;
     const page = pages.includes(q.page) ? q.page : '';
-    const inPages = pages.length ? pages.map((x) => `'${x}'`).join(',') : `''`;
-    const ch = q.channel || '';
-    const one = (sql, ...a) => this.sql.exec(sql, ...a).toArray()[0] || {};
-    const all = (sql, ...a) => this.sql.exec(sql, ...a).toArray();
+    const channel = CHANNELS.has(q.channel) ? q.channel : '';
+    const ttl = r.includes_today ? TODAY_CACHE_MS : HISTORY_CACHE_MS;
+    const ck = `st:${q.line || ''}|${page}|${channel}|${r.from}|${r.to}|${r.includes_today ? 1 : 0}`;
+    const hit = this.cacheGet(ck, ttl);
+    if (hit) return hit;
 
-    // 篩選條件（套用在 sessions 表 s 與 conv 表）
-    const sw = (from, to) => {
-      let w = `s.day BETWEEN '${from}' AND '${to}'`;
-      w += page ? ` AND s.page='${page}'` : ` AND s.page IN (${inPages})`;
-      if (ch) w += ` AND (${CHANNEL_SQL.replace(/\bsrc\b/g, 's.src').replace(/\bmed\b/g, 's.med')})='${ch.replace(/'/g, '')}'`;
-      return w;
-    };
-    const cw = (from, to, kind) => {
-      let w = `day BETWEEN '${from}' AND '${to}' AND kind='${kind}'`;
-      w += page ? ` AND page='${page}'` : ` AND page IN (${inPages})`;
-      if (ch) w += ` AND (${CHANNEL_SQL})='${ch.replace(/'/g, '')}'`;
-      return w;
-    };
-    const ENG = `(s.engaged=1 OR s.inter>0 OR s.eng_ms>=10000)`;
+    const now = Date.now();
+    if (r.from <= r.yesterday && r.to >= r.yesterday) this.ensureYesterday(now, r.yesterday);
+    if (r.includes_today) this.refreshToday(now, r.today);
+    const rows = this.dbAll(`SELECT day, built, data FROM rollup WHERE day >= ? AND day <= ?`, r.pfrom, r.to);
+    const out = statsFromRollupRows(rows, {
+      pages, page, channel, range: r, today: r.today, includes_today: r.includes_today,
+      firstDay: this.ensureFirstDay(), generated: now, data_note: dataNote(r.includes_today),
+      backfill_pending: this.backfillPending(r.today), today_excluded: r.today_excluded,
+    });
+    this.cacheSet(ck, out);
+    return out;
+  }
 
-    const totals = (from, to) => {
-      const t = one(`SELECT COUNT(*) sessions, COUNT(DISTINCT s.vid) visitors,
-          SUM(CASE WHEN ${ENG} THEN 1 ELSE 0 END) engaged,
-          SUM(CASE WHEN s.bclick>0 THEN 1 ELSE 0 END) bsessions,
-          SUM(s.bclick) bclicks,
-          AVG(CASE WHEN s.eng_ms>0 THEN s.eng_ms END) avg_ms,
-          AVG(s.scroll) avg_scroll
-        FROM sessions s WHERE ${sw(from, to)}`);
-      t.liff = one(`SELECT COUNT(*) n FROM conv WHERE ${cw(from, to, 'liff')}`).n || 0;
-      t.booked = one(`SELECT COUNT(*) n FROM conv WHERE ${cw(from, to, 'booked')}`).n || 0;
-      for (const k of ['sessions', 'visitors', 'engaged', 'bsessions', 'bclicks']) t[k] = t[k] || 0;
-      t.bounced = t.sessions - t.engaged;
-      t.avg_ms = Math.round(t.avg_ms || 0);
-      t.avg_scroll = Math.round(t.avg_scroll || 0);
-      return t;
-    };
+  // 一次只結算一天，把讀取量攤開，避免補歷史資料時衝破每天 500 萬列的上限。
+  async alarm() {
+    let delay = 60 * 1000;
+    try { delay = this.maintenance(); }
+    catch (e) {
+      try { await this.ctx.storage.setAlarm(Date.now() + delay); } catch (err) { /* 下次請求還會再排 */ }
+      throw e;
+    }
+    await this.ctx.storage.setAlarm(Date.now() + delay);
+  }
 
-    const cur = totals(r.from, r.to), prev = totals(r.pfrom, r.pto);
+  maintenance() {
+    const now = Date.now();
+    const today = dayOf(now);
+    const yesterday = addDays(today, -1);
+    const first = this.ensureFirstDay();
+    const yrow = this.dbAll(`SELECT built, built_at FROM rollup WHERE day=?`, yesterday)[0];
+    if (yesterdayNeedsRebuild(now, today, yrow)) {
+      this.saveRollup(yesterday, 1, now);
+      if (this.metaGet('bf_done') !== '1') return BACKFILL_GAP_MS;
+      return this.afterYesterday(now, today);
+    }
+    if (this.metaGet('bf_done') === '1' && yrow && yrow.built && this.sessionTouchedAfter(yesterday, yrow.built_at)) {
+      // 補歷史資料時不要每 20 秒重讀昨天。結算後若還有分頁補送離開（last 變新）再算一次。
+      this.saveRollup(yesterday, 1, now);
+      return this.afterYesterday(now, today);
+    }
+    if (this.metaGet('bf_done') !== '1') {
+      if (!first) this.metaSet('bf_done', '1');
+      else {
+        let cursor = this.metaGet('bf_next');
+        if (!cursor) cursor = addDays(yesterday, -1);
+        if (cursor < first) this.metaSet('bf_done', '1');
+        else {
+          if (this.dayHasRaw(cursor)) this.saveRollup(cursor, 1, now);
+          const next = addDays(cursor, -1);
+          this.metaSet('bf_next', next);
+          if (next < first) this.metaSet('bf_done', '1');
+          return BACKFILL_GAP_MS;
+        }
+      }
+    }
+    return this.afterYesterday(now, today);
+  }
 
-    // 各區塊：到達（看到過）與在此離開（沒點預約就離開時，畫面停在哪）
-    const reach = all(`SELECT e.k sec, COUNT(DISTINCT e.sid) n FROM events e JOIN sessions s ON s.sid=e.sid
-      WHERE e.name='section_view' AND ${sw(r.from, r.to)} GROUP BY e.k`);
-    const exits = all(`SELECT COALESCE(s.exit_sec, s.last_sec, 'hero') sec, COUNT(*) n,
-        SUM(CASE WHEN ${ENG} THEN 0 ELSE 1 END) bounced
-      FROM sessions s WHERE ${sw(r.from, r.to)} AND s.bclick=0 GROUP BY 1`);
-    const order = all(`SELECT e.k sec, AVG(CAST(e.ts - s.start AS REAL)) t FROM events e JOIN sessions s ON s.sid=e.sid
-      WHERE e.name='section_view' AND ${sw(r.from, r.to)} GROUP BY e.k ORDER BY t`).map((x) => x.sec);
-
-    const daily = all(`SELECT s.day d, COUNT(*) sessions, SUM(CASE WHEN ${ENG} THEN 0 ELSE 1 END) bounced,
-        SUM(CASE WHEN s.bclick>0 THEN 1 ELSE 0 END) bsessions
-      FROM sessions s WHERE ${sw(r.from, r.to)} GROUP BY s.day`);
-    const dconv = all(`SELECT day d, kind, COUNT(*) n FROM conv WHERE (${cw(r.from, r.to, 'liff')}) OR (${cw(r.from, r.to, 'booked')}) GROUP BY day, kind`);
-
-    const channels = all(`SELECT ${CHANNEL_SQL.replace(/\bsrc\b/g, 's.src').replace(/\bmed\b/g, 's.med')} ch, COUNT(*) sessions,
-        SUM(CASE WHEN ${ENG} THEN 0 ELSE 1 END) bounced, SUM(CASE WHEN s.bclick>0 THEN 1 ELSE 0 END) bsessions
-      FROM sessions s WHERE ${sw(r.from, r.to)} GROUP BY 1 ORDER BY sessions DESC`);
-    const cbook = all(`SELECT ${CHANNEL_SQL} ch, kind, COUNT(*) n FROM conv WHERE (${cw(r.from, r.to, 'liff')}) OR (${cw(r.from, r.to, 'booked')}) GROUP BY 1, 2`);
-    const sources = all(`SELECT s.src, s.med, s.camp, COUNT(*) sessions, SUM(CASE WHEN ${ENG} THEN 0 ELSE 1 END) bounced,
-        SUM(CASE WHEN s.bclick>0 THEN 1 ELSE 0 END) bsessions
-      FROM sessions s WHERE ${sw(r.from, r.to)} GROUP BY 1, 2, 3 ORDER BY sessions DESC LIMIT 20`);
-    const devices = all(`SELECT s.dev, COUNT(*) sessions, SUM(CASE WHEN ${ENG} THEN 0 ELSE 1 END) bounced,
-        SUM(CASE WHEN s.bclick>0 THEN 1 ELSE 0 END) bsessions, AVG(CASE WHEN s.eng_ms>0 THEN s.eng_ms END) avg_ms
-      FROM sessions s WHERE ${sw(r.from, r.to)} GROUP BY 1 ORDER BY sessions DESC`);
-    const ctas = all(`SELECT e.k cta, COUNT(*) clicks, COUNT(DISTINCT e.sid) sessions FROM events e JOIN sessions s ON s.sid=e.sid
-      WHERE e.name='booking_click' AND ${sw(r.from, r.to)} GROUP BY e.k ORDER BY clicks DESC`);
-    const inter = all(`SELECT e.name, e.k, COUNT(*) n, COUNT(DISTINCT e.sid) sessions FROM events e JOIN sessions s ON s.sid=e.sid
-      WHERE e.name IN ('hero_step_click','faq_open','store_expand','store_map_click','xsell_expand','xsell_pick','case_view','testimonial_view','line_click','xsell_group','xsell_cert')
-        AND ${sw(r.from, r.to)} GROUP BY 1, 2 ORDER BY n DESC LIMIT 30`);
-    const scroll = all(`SELECT e.k pct, COUNT(DISTINCT e.sid) n FROM events e JOIN sessions s ON s.sid=e.sid
-      WHERE e.name='scroll_depth' AND ${sw(r.from, r.to)} GROUP BY e.k`);
-    const first = one(`SELECT MIN(day) d FROM sessions`).d || null;
-
-    return { range: r, filter: { page, channel: ch }, cur, prev, reach, exits, order, daily, dconv, channels, cbook, sources, devices, ctas, inter, scroll, first_day: first, generated: Date.now() };
+  afterYesterday(now, today) {
+    if (now < Date.parse(today + 'T00:00:00Z')) return YDAY_GRACE_MS;
+    return nextIdleDelay(now);
   }
 }
 

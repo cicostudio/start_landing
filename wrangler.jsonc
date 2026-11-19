@@ -1,6 +1,15 @@
 {
   // 靜態網站（site/）＋ 一支小 Worker 負責 /api/*（行為收集、後台數據、登入）
   "name": "start-landing",
+  // workers.dev 與舊版 Preview URL 已在後台手動關閉，下次部署必須維持關閉
+  "workers_dev": false,
+  "preview_urls": false,
+  // Git 上的 wrangler preview 需要這個區塊。預覽用自己的 Durable Object，不會寫進正式統計。
+  "previews": {
+    "durable_objects": {
+      "bindings": [{ "name": "ANALYTICS", "class_name": "Analytics" }]
+    }
+  },
   "main": "worker/index.js",
   "compatibility_date": "2025-06-01",
   "assets": {
