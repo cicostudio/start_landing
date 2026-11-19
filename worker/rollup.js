@@ -12,10 +12,6 @@ export const TODAY_CACHE_MS = 10 * 60 * 1000;
 export const HISTORY_CACHE_MS = 60 * 1000;
 export const YDAY_GRACE_MS = 30 * 60 * 1000;
 export const BACKFILL_GAP_MS = 20 * 1000;
-export const PRUNE_GAP_MS = 60 * 60 * 1000;
-export const RETENTION_DAYS = 180;
-export const PRUNE_EVENTS = 800;
-export const PRUNE_SESSIONS = 200;
 
 export const INTER_NAMES = ['hero_step_click', 'faq_open', 'store_expand', 'store_map_click', 'xsell_expand', 'xsell_pick', 'case_view', 'testimonial_view', 'line_click', 'xsell_group', 'xsell_cert'];
 const INTER = new Set(INTER_NAMES);
@@ -112,9 +108,6 @@ export const SQL_CONV = `SELECT page, src, med, kind, COUNT(*) AS n
 
 export const SQL_HAS_SESSION = `SELECT 1 AS x FROM sessions INDEXED BY s_day WHERE day = ? LIMIT 1`;
 export const SQL_HAS_CONV = `SELECT 1 AS x FROM conv INDEXED BY c_day WHERE day = ? LIMIT 1`;
-export const SQL_HAS_EVENT = `SELECT 1 AS x FROM events INDEXED BY e_day WHERE day = ? LIMIT 1`;
-export const SQL_EVENT_IDS = `SELECT rowid AS id FROM events INDEXED BY e_day WHERE day = ? LIMIT ?`;
-export const SQL_SESSION_IDS = `SELECT rowid AS id FROM sessions INDEXED BY s_day WHERE day = ? LIMIT ?`;
 
 /**
  * 用「事件日」索引把某一工作階段日的原始列收成一包。

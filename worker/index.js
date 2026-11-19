@@ -18,9 +18,9 @@ import { DurableObject } from 'cloudflare:workers';
 import { handleMcp } from './mcp.js';
 import {
   addDays, dayOf, resolveRange, rebuildDayFromDb, statsFromRollupRows, dataNote,
-  TODAY_CACHE_MS, HISTORY_CACHE_MS, BACKFILL_GAP_MS, PRUNE_GAP_MS, RETENTION_DAYS,
-  PRUNE_EVENTS, PRUNE_SESSIONS, YDAY_GRACE_MS, CHANNELS, yesterdayNeedsRebuild, nextIdleDelay,
-  SQL_HAS_SESSION, SQL_HAS_CONV, SQL_HAS_EVENT, SQL_EVENT_IDS, SQL_SESSION_IDS,
+  TODAY_CACHE_MS, HISTORY_CACHE_MS, BACKFILL_GAP_MS,
+  YDAY_GRACE_MS, CHANNELS, yesterdayNeedsRebuild, nextIdleDelay,
+  SQL_HAS_SESSION, SQL_HAS_CONV,
 } from './rollup.js';
 
 export { dayOf };
@@ -278,13 +278,6 @@ export class Analytics extends DurableObject {
     const row = this.dbAll(`SELECT MAX(last) AS m FROM sessions INDEXED BY s_day WHERE day=?`, day)[0];
     return !!(row && row.m > ts);
   }
-  deleteIds(selectSql, table, day, limit) {
-    const ids = this.dbAll(selectSql, day, limit);
-    if (!ids.length) return 0;
-    const qs = ids.map(() => '?').join(',');
-    this.sql.exec(`DELETE FROM ${table} WHERE rowid IN (${qs})`, ...ids.map((r) => r.id));
-    return ids.length;
-  }
 
   // ---- 後台數據：只讀每日彙總。今天要 include_today 才算，並快取 10 分鐘。----
   stats(q) {
@@ -353,35 +346,12 @@ export class Analytics extends DurableObject {
         }
       }
     }
-    return this.pruneChunk(today) ? PRUNE_GAP_MS : this.afterYesterday(now, today);
+    return this.afterYesterday(now, today);
   }
 
   afterYesterday(now, today) {
     if (now < Date.parse(today + 'T00:00:00Z')) return YDAY_GRACE_MS;
     return nextIdleDelay(now);
-  }
-
-  // 只刪已經結算、而且超過保留天數的原始列。每小時上限很小，避免寫入配額被刪除吃光。
-  pruneChunk(today) {
-    if (this.metaGet('bf_done') !== '1') return 0;
-    const cutoff = addDays(today, -RETENTION_DAYS);
-    let marker = this.metaGet('prune_day') || '';
-    if (marker === 'done:' + cutoff) return 0;
-    if (!marker || marker.startsWith('done:') || marker > cutoff) {
-      const row = this.dbAll(`SELECT day FROM rollup WHERE built=1 AND day<=? ORDER BY day LIMIT 1`, cutoff)[0];
-      if (!row) { this.metaSet('prune_day', 'done:' + cutoff); return 0; }
-      marker = row.day;
-    }
-    const deletedEvents = this.deleteIds(SQL_EVENT_IDS, 'events', marker, PRUNE_EVENTS);
-    if (deletedEvents >= PRUNE_EVENTS) { this.metaSet('prune_day', marker); return deletedEvents; }
-    const deletedSessions = this.deleteIds(SQL_SESSION_IDS, 'sessions', marker, PRUNE_SESSIONS);
-    if (this.dbAll(SQL_HAS_EVENT, marker)[0] || this.dbAll(SQL_HAS_SESSION, marker)[0]) {
-      this.metaSet('prune_day', marker);
-      return deletedEvents + deletedSessions;
-    }
-    const nxt = this.dbAll(`SELECT day FROM rollup WHERE built=1 AND day>? AND day<=? ORDER BY day LIMIT 1`, marker, cutoff)[0];
-    this.metaSet('prune_day', nxt ? nxt.day : 'done:' + cutoff);
-    return nxt ? 1 : 0;
   }
 }
 

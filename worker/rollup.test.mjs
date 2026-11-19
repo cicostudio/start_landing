@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import {
-  CHANNELS, SQL_EVENTS, SQL_SESSIONS, SQL_CONV, SQL_EVENT_IDS,
+  CHANNELS, SQL_EVENTS, SQL_SESSIONS, SQL_CONV,
   addDays, channelOf, dataNote, dayOf, nextIdleDelay, rebuildDayFromDb, resolveRange,
   statsFromRollupRows, yesterdayNeedsRebuild,
 } from './rollup.js';
@@ -274,9 +274,6 @@ test('彙總查詢走日期索引，不掃整張事件表', () => {
   assert.match(sessions, /USING INDEX s_day/);
   const conv = plan(SQL_CONV, '2026-11-17');
   assert.match(conv, /USING INDEX c_day/);
-  const ids = plan(SQL_EVENT_IDS, '2026-11-17', 800);
-  assert.match(ids, /INDEX e_day/);
-  assert.doesNotMatch(ids, /SCAN/);
 });
 
 test('每日彙總與舊版 stats() 的數字一致，且預設不含今天', () => {
