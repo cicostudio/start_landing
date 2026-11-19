@@ -41,6 +41,7 @@ header.top{position:sticky;top:0;z-index:20;background:rgba(245,244,241,.94);bac
 .bar h1{margin:0;font-size:17px;font-weight:900;flex:1;white-space:nowrap}
 .bar .upd{font-size:12px;color:var(--muted)}
 .btn-ghost{border:1px solid var(--line);background:var(--card);border-radius:999px;height:34px;padding:0 14px;font-size:13px;cursor:pointer}
+#liveBtn[aria-pressed=true]{background:var(--brand);color:#fff;border-color:var(--brand)}
 .filters{display:flex;gap:8px;align-items:center;padding:0 0 12px;overflow-x:auto;scrollbar-width:none}
 .filters::-webkit-scrollbar{display:none}
 .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;flex:0 0 auto}
@@ -179,6 +180,7 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     <div class="wrap">
       <div class="bar">
         <h1>凝聚 行銷後台</h1>
+        <span class="upd" id="asof">資料更新至昨日</span>
         <span class="upd" id="upd"></span>
         <button class="btn-ghost" id="logout" type="button">登出</button>
       </div>
@@ -191,12 +193,12 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
       </div>
       <div class="filters" role="toolbar" aria-label="篩選">
         <div class="seg" id="rangeSeg">
-          <button type="button" data-r="0">今天</button>
           <button type="button" data-r="1">昨天</button>
           <button type="button" data-r="7" aria-pressed="true">近 7 天</button>
           <button type="button" data-r="30">近 30 天</button>
           <button type="button" data-r="c">自訂</button>
         </div>
+        <button type="button" class="btn-ghost" id="liveBtn" aria-pressed="false" title="今天尚未結算。開啟後才會讀取今天的即時數字，約每 10 分鐘更新一次">顯示今天（即時）</button>
         <span class="custom hidden" id="custom"><input type="date" id="from"> – <input type="date" id="to"></span>
         <select id="page" aria-label="頁面"><option value="">全部頁面</option></select>
         <select id="channel" aria-label="流量來源">
@@ -318,18 +320,33 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
   var div = function (a, b) { return b > 0 ? a / b : null; };
 
   // ---------- 狀態 ----------
-  var state = { line: 'one', r: '7', from: '', to: '', page: '', channel: '', camp: '' };
+  var state = { line: 'one', r: '7', from: '', to: '', page: '', channel: '', camp: '', live: false };
   try { Object.assign(state, JSON.parse(localStorage.getItem('nj_admin_f') || '{}')); } catch (e) {}
+  if (state.r === '0' || !state.r) state.r = '7';
+  // 每次打開都從「到昨天」開始。今天要再按一次，避免這台裝置一直算即時數字。
+  state.live = false;
   var data = null;
   function save() { try { localStorage.setItem('nj_admin_f', JSON.stringify(state)); } catch (e) {} }
   function tw(d) { return new Date(d.getTime() + 8 * 3600e3).toISOString().slice(0, 10); }
   function shift(s, n) { return new Date(Date.parse(s + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10); }
   function rangeDates() {
     var today = tw(new Date());
-    if (state.r === '0') return [today, today];
-    if (state.r === '1') { var y = shift(today, -1); return [y, y]; }
-    if (state.r === 'c' && state.from && state.to) return state.from <= state.to ? [state.from, state.to] : [state.to, state.from];
-    var n = Number(state.r) || 7; return [shift(today, -(n - 1)), today];
+    var yday = shift(today, -1);
+    var end = state.live ? today : yday;
+    if (state.r === '1') return [yday, yday];
+    if (state.r === 'c' && state.from && state.to) {
+      var a = state.from, b = state.to;
+      if (a > b) { var t = a; a = b; b = t; }
+      if (b > end) b = end;
+      if (a > b) a = b;
+      return [a, b];
+    }
+    var n = Number(state.r) || 7;
+    return [shift(end, -(n - 1)), end];
+  }
+  function previewNote() {
+    var d = rangeDates(), today = tw(new Date());
+    return state.live && d[1] >= today ? '含今天即時數據，約每 10 分鐘更新' : '資料更新至昨日';
   }
 
   // ---------- 登入 ----------
@@ -352,7 +369,12 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     $$('#rangeSeg button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-r') === state.r)); });
     $('#custom').classList.toggle('hidden', state.r !== 'c');
     var d = rangeDates(); $('#from').value = d[0]; $('#to').value = d[1];
+    var today = tw(new Date()), max = state.live ? today : shift(today, -1);
+    $('#from').max = max; $('#to').max = max;
     $('#page').value = state.page; $('#channel').value = state.channel;
+    var liveBtn = $('#liveBtn');
+    if (liveBtn) liveBtn.setAttribute('aria-pressed', state.live ? 'true' : 'false');
+    if (!data) $('#asof').textContent = previewNote();
     $$('#lineSeg button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-l') === state.line)); });
   }
   $$('#lineSeg button').forEach(function (b) { b.addEventListener('click', function () { state.line = b.getAttribute('data-l'); state.page = ''; state.camp = ''; save(); load(); }); });
@@ -366,26 +388,38 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     $('#channel').classList.toggle('hidden', !pages.length);
   }
   $$('#rangeSeg button').forEach(function (b) { b.addEventListener('click', function () { state.r = b.getAttribute('data-r'); if (state.r === 'c') { var d = rangeDates(); state.from = d[0]; state.to = d[1]; } save(); syncFilters(); load(); }); });
+  $('#liveBtn').addEventListener('click', function () { state.live = !state.live; save(); syncFilters(); load(); });
   ['from', 'to'].forEach(function (id) { $('#' + id).addEventListener('change', function () { state[id] = $('#' + id).value; save(); load(); }); });
   $('#page').addEventListener('change', function () { state.page = this.value; save(); load(); });
   $('#channel').addEventListener('change', function () { state.channel = this.value; save(); load(); });
   $('#camp').addEventListener('change', function () { state.camp = this.value; save(); render(); });
 
   // ---------- 讀資料 ----------
-  var seq = 0;
+  var seq = 0, loadTimer = null, loadCtrl = null;
   function load() {
     syncFilters();
-    var d = rangeDates(), my = ++seq;
+    $('#asof').textContent = previewNote();
     $('#app').classList.remove('hidden');
     $('#loading').classList.remove('hidden'); $('#loading').textContent = '讀取中…';
+    clearTimeout(loadTimer);
+    loadTimer = setTimeout(fetchStats, 300);
+  }
+  function fetchStats() {
+    if (loadCtrl) loadCtrl.abort();
+    loadCtrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var d = rangeDates(), my = ++seq, today = tw(new Date());
     var qs = new URLSearchParams({ line: state.line, from: d[0], to: d[1], page: state.page, channel: state.channel });
-    fetch('/api/stats?' + qs, { credentials: 'same-origin' }).then(function (r) {
+    if (state.live && d[1] >= today) qs.set('include_today', '1');
+    fetch('/api/stats?' + qs, { credentials: 'same-origin', signal: loadCtrl ? loadCtrl.signal : undefined }).then(function (r) {
       if (r.status === 401) { showLogin(''); throw 0; }
       return r.json();
     }).then(function (j) {
       if (my !== seq) return;
       data = j; render();
-    }).catch(function (e) { if (e !== 0) { $('#loading').textContent = '讀取失敗，請重新整理'; } });
+    }).catch(function (e) {
+      if (e && e.name === 'AbortError') return;
+      if (e !== 0 && my === seq) $('#loading').textContent = '讀取失敗，請重新整理';
+    });
   }
 
   // ---------- 計算 ----------
@@ -412,6 +446,9 @@ footer label{display:flex;gap:6px;align-items:center;cursor:pointer}
     } else sel.classList.add('hidden');
 
     var r = D.range;
+    var note = D.data_note || previewNote();
+    if (D.backfill_pending) note += ' · 早期資料分批整理中，請稍後重新整理';
+    $('#asof').textContent = note;
     $('#upd').textContent = '更新 ' + new Date(D.generated).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
     $('#cmpLabel').textContent = r.from === r.to ? r.from + '，與前一天相比' : r.from + ' ～ ' + r.to + '，與前 ' + r.n + ' 天相比';
     $('#since').textContent = D.first_day ? '自家收集從 ' + D.first_day + ' 開始累積' : '自家收集尚無資料（介紹頁有人造訪後就會出現）';

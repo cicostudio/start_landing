@@ -20,7 +20,7 @@ const ORDER = {
 const CH = { meta_paid: 'Meta 廣告', meta_organic: 'FB／IG 自然', line: 'LINE', google: 'Google 自然', google_paid: 'Google 廣告', direct: '直接輸入', other: '其他網站' };
 const CTA = { hero: '首屏按鈕', price: '價格區按鈕', sticky: '底部常駐列', 'store-taipei': '台北店卡片', 'store-banqiao': '板橋店卡片', cases: '案例下方按鈕' };
 
-const dateArg = { type: 'string', description: 'YYYY-MM-DD（台灣時間）。省略時預設近 7 天（含今天）。' };
+const dateArg = { type: 'string', description: 'YYYY-MM-DD（台灣時間）。省略時預設近 7 天，截止到昨天（不含今天）。' };
 const TOOLS = [
   {
     name: 'list_product_lines',
@@ -38,6 +38,7 @@ const TOOLS = [
         from: dateArg, to: dateArg,
         page: { type: 'string', description: '只看某一頁（如 one-on-one-zh、run-zh、run-direct-zh）。省略＝這條產品線全部頁面。' },
         channel: { type: 'string', enum: ['meta_paid', 'meta_organic', 'line', 'google', 'google_paid', 'direct', 'other'], description: '只看某個流量管道。省略＝全部。' },
+        include_today: { type: 'boolean', description: '要含「今天」的即時數字才設 true。預設 false：期間截止到昨天，只讀已結算的每日彙總。今天尚未結束，數字約每 10 分鐘更新一次。' },
       },
     },
     annotations: { readOnlyHint: true },
@@ -47,7 +48,10 @@ const TOOLS = [
     description: '取得一條產品線的 Meta 廣告活動明細（每個活動的曝光、觸及、連結點擊、花費、CTR、CPC、CPM、頻率）與每日數字，含前一期比較。',
     inputSchema: {
       type: 'object',
-      properties: { line: { type: 'string', enum: ['one', 'group', 'cert'] }, from: dateArg, to: dateArg },
+      properties: {
+        line: { type: 'string', enum: ['one', 'group', 'cert'] }, from: dateArg, to: dateArg,
+        include_today: { type: 'boolean', description: '要含今天的廣告與造訪才設 true。預設截止到昨天。' },
+      },
     },
     annotations: { readOnlyHint: true },
   },
@@ -96,7 +100,7 @@ export async function handleMcp(req, env, deps) {
           protocolVersion: SUPPORTED.includes(v) ? v : PROTOCOL,
           capabilities: { tools: { listChanged: false } },
           serverInfo: { name: 'ningju-marketing', title: '凝聚行銷後台', version: '1.0.0' },
-          instructions: '凝聚運動顧問的行銷後台數據（唯讀）。先用 list_product_lines 看有哪些產品線與資料，再用 get_marketing_report 取漏斗與跳出數據、get_ad_campaigns 取廣告活動明細。金額單位為新台幣，日期為台灣時間。',
+          instructions: '凝聚運動顧問的行銷後台數據（唯讀）。先用 list_product_lines 看有哪些產品線與資料，再用 get_marketing_report 取漏斗與跳出數據、get_ad_campaigns 取廣告活動明細。金額單位為新台幣，日期為台灣時間。預設期間截止到昨天（已結算）；要含今天的即時數字才傳 include_today=true，該數字約每 10 分鐘更新一次。',
         });
       }
       case 'ping': return ok({});
@@ -129,7 +133,7 @@ export async function handleMcp(req, env, deps) {
       };
     }
     if (name === 'get_ad_campaigns') {
-      const q = { line: LINES[a.line] ? a.line : 'one', from: a.from, to: a.to };
+      const q = { line: LINES[a.line] ? a.line : 'one', from: a.from, to: a.to, include_today: a.include_today ? '1' : '' };
       const s = await db.stats(q);
       const m = await metaReport(env, db, q);
       if (!m.configured) return { product_line: LINES[q.line].name, range: { from: s.range.from, to: s.range.to, days: s.range.n }, meta_ads: '尚未串接這條產品線的廣告帳號' };
@@ -140,17 +144,18 @@ export async function handleMcp(req, env, deps) {
       return {
         product_line: LINES[q.line].name,
         range: { from: s.range.from, to: s.range.to, days: s.range.n, previous: { from: s.range.pfrom, to: s.range.pto } },
+        as_of: s.as_of, includes_today: !!s.includes_today, data_note: s.data_note || '資料更新至昨日',
         totals: { ...cur, ...adCalc(cur) },
         previous_totals: { ...prev, ...adCalc(prev) },
         change_pct: { impressions: chg(cur.impressions, prev.impressions), clicks: chg(cur.clicks, prev.clicks), spend: chg(cur.spend, prev.spend) },
         campaigns: m.campaigns.map((c) => ({ id: c.id, name: c.name, impressions: c.impressions, reach: c.reach, clicks: c.clicks, spend: r1(c.spend, 0), ...adCalc(c),
           previous: (() => { const p = m.prev.find((x) => x.id === c.id); return p ? { impressions: p.impressions, clicks: p.clicks, spend: r1(p.spend, 0), ...adCalc(p) } : null; })() })),
         daily: Object.values(byDay).sort((x, y) => x.day.localeCompare(y.day)).map((d) => ({ ...d, spend: r1(d.spend, 0), ctr_pct: rate(d.clicks, d.impressions) })),
-        notes: ['clicks＝連結點擊（不含按讚留言）', 'reach 為各活動加總，同一人可能重複計算', '金額單位：新台幣'],
+        notes: ['clicks＝連結點擊（不含按讚留言）', 'reach 為各活動加總，同一人可能重複計算', '金額單位：新台幣', s.data_note || '資料更新至昨日'],
       };
     }
     if (name === 'get_marketing_report') {
-      const q = { line: LINES[a.line] ? a.line : 'one', from: a.from, to: a.to, page: a.page || '', channel: a.channel || '' };
+      const q = { line: LINES[a.line] ? a.line : 'one', from: a.from, to: a.to, page: a.page || '', channel: a.channel || '', include_today: a.include_today ? '1' : '' };
       const D = await stats(db, q);
       const m = await metaReport(env, db, q).catch((e) => ({ configured: true, error: String(e.message || e) }));
       const g = await ga4Report(env, db, q).catch((e) => ({ error: String(e.message || e) }));
@@ -180,6 +185,9 @@ export async function handleMcp(req, env, deps) {
         has_landing_page: L.pages.length > 0,
         filter: { page: q.page || '全部頁面', channel: q.channel ? CH[q.channel] : '全部流量' },
         range: { from: D.range.from, to: D.range.to, days: D.range.n, previous: { from: D.range.pfrom, to: D.range.pto } },
+        as_of: D.as_of, includes_today: !!D.includes_today, data_note: D.data_note || '資料更新至昨日',
+        ...(D.today_excluded ? { note_today: '這次要求的結束日含今天，但沒有設 include_today，所以已截止到昨天。要看今天的即時數字請設 include_today=true。' } : {}),
+        ...(D.backfill_pending ? { backfill_note: `較早的日期還在分批整理（約剩 ${D.backfill_pending} 天），這段期間的數字可能暫時偏少，稍後再查一次即可。` } : {}),
         first_party_data_since: D.first_day,
         meta_ads: ad ? { totals: { ...ad, ...adCalc(ad) }, previous: { ...adp, ...adCalc(adp) },
           landing_rate_pct: rate(mps, ad.clicks), meta_paid_sessions: mps,
