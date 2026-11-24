@@ -73,8 +73,34 @@
     return sec ? sec.getAttribute('data-section') : null;
   }
   function scrollPct() { var h = document.documentElement; return Math.min(100, Math.round((h.scrollTop + innerHeight) / h.scrollHeight * 100)); }
+  // ---- Meta 再行銷名單用的自訂事件（每次造訪各送一次）----------------------
+  //   EngagedVisit：畫面停留滿 10 秒，或有任何點擊／展開（＝沒跳出的人）
+  //   ViewPrice：  看到價格區
+  // 在 Meta 用這兩個事件建自訂受眾，名單只留真的看過內容的人。後台勾「不計入」的裝置不送。
+  var INTERACT = { booking_click: 1, line_click: 1, faq_open: 1, store_expand: 1, store_map_click: 1, xsell_expand: 1, xsell_pick: 1,
+    case_view: 1, testimonial_view: 1, xsell_group: 1, xsell_cert: 1, hero_step_click: 1 };
+  var MARK = {};
+  try { MARK = JSON.parse(sessionStorage.getItem('nj_mark') || '{}'); if (MARK.sid !== SID) MARK = { sid: SID }; } catch (e) { MARK = { sid: SID }; }
+  function once(key, fn) {
+    if (MARK[key] || OPT) return;
+    MARK[key] = 1;
+    try { sessionStorage.setItem('nj_mark', JSON.stringify(MARK)); } catch (e) {}
+    fn();
+  }
+  function metaCustom(name, p) {
+    if (!window.fbq) return;
+    try { fbq('trackCustom', name, Object.assign({ page_type: S.page }, p || {}), { eventID: name + '_' + SID }); } catch (e) {}
+  }
+  function engagedVisit(trigger) {
+    once('ev', function () {
+      metaCustom('EngagedVisit', { trigger: trigger });
+      try { gtag('event', 'engaged_visit', { trigger: trigger, page_type: S.page }); } catch (e) {}
+      if (window.NJ_DEBUG) console.log('[track] EngagedVisit', trigger);
+    });
+  }
   setInterval(function () {
     if (!pinged && engaged() >= 10000) { pinged = true; push({ n: 'ping', ms: engaged(), scroll: scrollPct() }, true); }
+    if (engaged() >= 10000) engagedVisit('time_10s');
   }, 2000);
   function leave() {
     if (shown) { acc += Date.now() - shown; shown = 0; }
@@ -102,6 +128,11 @@
     }
     if (opts.line && window._lt && S.lineTag) _lt('send', 'cv', { type: opts.line }, [S.lineTag]);
     try { var kk = KEYOF[name]; push({ n: name, k: kk ? params[kk] : (params.link_url || null) }, name === 'booking_click'); } catch (e) {}
+    if (INTERACT[name]) engagedVisit('interaction');
+    if (name === 'section_view' && params.section === 'price') once('vp', function () {
+      metaCustom('ViewPrice');
+      if (window.NJ_DEBUG) console.log('[track] ViewPrice');
+    });
     if (window.NJ_DEBUG) console.log('[track]', name, params, opts);
   };
 })();
