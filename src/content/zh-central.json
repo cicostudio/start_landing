@@ -9,7 +9,7 @@
     "og_image": "assets/img/flow-2.jpg",
     "page_id": "central-zh",
     "template": "central",
-    "testimonial_position": "after_price"
+    "testimonial_position": "after_cases"
   },
   "tracking": {
     "ga4": "G-55G78H5BPG",
@@ -25,9 +25,11 @@
   },
   "images": {
     "hero_images": [
-      "flow-2.jpg"
+      "flow-1.jpg",
+      "flow-2.jpg",
+      "flow-3.jpg"
     ],
-    "closing_image": "flow-1.jpg"
+    "closing_image": "flow-2.jpg"
   },
   "price": {
     "first": "1,999",
@@ -154,5 +156,50 @@
       "role": "CT226 男子總冠軍",
       "photo": "voice-03.jpg"
     }
-  ]
+  ],
+  "compare": [
+    {
+      "icon": "rest",
+      "name": "休息",
+      "result": "過幾天又回來",
+      "fix": "找出讓同一處反覆受力的結構"
+    },
+    {
+      "icon": "massage",
+      "name": "按摩",
+      "result": "舒服兩天又緊",
+      "fix": "處理整條力線，不只痛的那一點"
+    },
+    {
+      "icon": "stretch",
+      "name": "拉筋",
+      "result": "很快又緊回來",
+      "fix": "調整結構後，再用訓練讓它留住"
+    }
+  ],
+  "trust": {
+    "photo": "voice-01.jpg",
+    "text": "亞運鐵人三項國手潘子易也在這裡調整"
+  },
+  "compare_way": {
+    "eyebrow": "凝聚的做法",
+    "title": "不只處理痛的那一點，<br>順著整條線找回源頭。",
+    "steps": [
+      [
+        "01",
+        "找源頭",
+        "錄下動作"
+      ],
+      [
+        "02",
+        "結構調整",
+        "當場撐開"
+      ],
+      [
+        "03",
+        "功能整合",
+        "練到留住"
+      ]
+    ]
+  }
 }
