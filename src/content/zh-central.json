@@ -201,5 +201,11 @@
         "練到留住"
       ]
     ]
-  }
+  },
+  "text_overrides": [
+    [
+      "<details class=\"store\" data-store=\"台北旗艦店\" style=\"border-top: 0\">",
+      "<details class=\"store\" data-store=\"台北旗艦店\" style=\"border-top: 0\" open data-autoopen>"
+    ]
+  ]
 }

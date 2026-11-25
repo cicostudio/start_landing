@@ -47,20 +47,26 @@
   });
 
   // ---- store cards: expand in place (no leaving the page) ----
+  // data-autoopen：頁面預設展開的門市，載入地圖但不記一次 store_expand
+  function loadMap(d) {
+    var m = d.querySelector('.store-map[data-map-src]');
+    if (m && !m.firstChild) {   // 展開時才載入地圖，不拖慢首屏
+      var f = document.createElement('iframe');
+      f.src = m.getAttribute('data-map-src');
+      f.title = d.getAttribute('data-store') + ' 地圖';
+      f.loading = 'lazy';
+      f.referrerPolicy = 'no-referrer-when-downgrade';
+      f.setAttribute('style', 'display:block;width:100%;height:100%;border:0');
+      m.appendChild(f);
+    }
+  }
   $$('details.store').forEach(function (d) {
+    if (d.open && d.hasAttribute('data-autoopen')) { d._auto = true; loadMap(d); }
     d.addEventListener('toggle', function () {
-      if (!d.open) return;
+      if (!d.open) { d._auto = false; return; }
+      loadMap(d);
+      if (d._auto) { d._auto = false; return; }
       track('store_expand', { store: d.getAttribute('data-store') });
-      var m = d.querySelector('.store-map[data-map-src]');
-      if (m && !m.firstChild) {   // 展開時才載入地圖，不拖慢首屏
-        var f = document.createElement('iframe');
-        f.src = m.getAttribute('data-map-src');
-        f.title = d.getAttribute('data-store') + ' 地圖';
-        f.loading = 'lazy';
-        f.referrerPolicy = 'no-referrer-when-downgrade';
-        f.setAttribute('style', 'display:block;width:100%;height:100%;border:0');
-        m.appendChild(f);
-      }
     });
   });
 
