@@ -77,9 +77,9 @@ h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:.02em;margin:0}
 .store .addr{color:var(--ink)}
 .mrt-row{display:flex;gap:6px}
 .mrt{display:inline-block;padding:1px 10px;border-radius:999px;font-size:12px;font-weight:700}
-.map{margin-top:14px;aspect-ratio:16/10;border-radius:16px;overflow:hidden;background:#ECE8E0}
+.map{position:relative;margin-top:14px;aspect-ratio:16/10;border-radius:16px;overflow:hidden;background:#ECE8E0}
+.map-link{position:absolute;inset:0;z-index:1}
 .map iframe{width:100%;height:100%;border:0;display:block}
-.btn-o{display:flex;align-items:center;justify-content:center;min-height:46px;margin-top:12px;border-radius:999px;border:1px solid var(--bronze);color:var(--bronze-d)!important;font-size:15px;font-weight:700;text-decoration:none}
 .rules{background:var(--sand);border-radius:24px;padding:20px 22px;font-size:14px;color:var(--mute)}
 .rules h3{font-size:16px;color:var(--ink);margin-bottom:6px}
 .rules ul{margin:0;padding-left:1.2em}
@@ -167,16 +167,14 @@ h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:.02em;margin:0}
         <p class="mrt-row"><span class="mrt" style="background:#0070BD;color:#FFFFFF">板南線</span></p>
         <p>善導寺站 6 號出口<br>步行 8 分鐘</p>
         <p class="addr">台北市中山區長安東路一段42號</p>
-        <div class="map" data-map-src="https://www.google.com/maps?q=%E5%8F%B0%E5%8C%97%E5%B8%82%E4%B8%AD%E5%B1%B1%E5%8D%80%E9%95%B7%E5%AE%89%E6%9D%B1%E8%B7%AF%E4%B8%80%E6%AE%B542%E8%99%9F&hl=zh-TW&z=16&output=embed"></div>
-        <a class="btn-o js-map" href="https://maps.app.goo.gl/Krt4iJGSLNFcKaqJA" target="_blank" rel="noopener" data-store="taipei">開啟 Google 地圖 ↗</a>
+        <div class="map" data-map-src="https://www.google.com/maps?q=%E5%8F%B0%E5%8C%97%E5%B8%82%E4%B8%AD%E5%B1%B1%E5%8D%80%E9%95%B7%E5%AE%89%E6%9D%B1%E8%B7%AF%E4%B8%80%E6%AE%B542%E8%99%9F&hl=zh-TW&z=16&output=embed"><a class="map-link js-map" href="https://maps.app.goo.gl/Krt4iJGSLNFcKaqJA" target="_blank" rel="noopener" data-store="taipei" aria-label="在 Google 地圖開啟"></a></div>
       </div>
       <div class="store">
         <h3>板橋創始店</h3>
         <p class="mrt-row"><span class="mrt" style="background:#0070BD;color:#FFFFFF">板南線</span><span class="mrt" style="background:#FFDB00;color:#2C2B28">環狀線</span></p>
         <p>新埔站 3 號出口<br>步行 2 分鐘</p>
         <p class="addr">新北市板橋區民生路二段232-20號</p>
-        <div class="map" data-map-src="https://www.google.com/maps?q=%E6%96%B0%E5%8C%97%E5%B8%82%E6%9D%BF%E6%A9%8B%E5%8D%80%E6%B0%91%E7%94%9F%E8%B7%AF%E4%BA%8C%E6%AE%B5232-20%E8%99%9F&hl=zh-TW&z=16&output=embed"></div>
-        <a class="btn-o js-map" href="https://maps.app.goo.gl/pUZz4HPXpt5n4fYy9" target="_blank" rel="noopener" data-store="banqiao">開啟 Google 地圖 ↗</a>
+        <div class="map" data-map-src="https://www.google.com/maps?q=%E6%96%B0%E5%8C%97%E5%B8%82%E6%9D%BF%E6%A9%8B%E5%8D%80%E6%B0%91%E7%94%9F%E8%B7%AF%E4%BA%8C%E6%AE%B5232-20%E8%99%9F&hl=zh-TW&z=16&output=embed"><a class="map-link js-map" href="https://maps.app.goo.gl/PR1YAMiiHuXtxyaJ9" target="_blank" rel="noopener" data-store="banqiao" aria-label="在 Google 地圖開啟"></a></div>
       </div>
     </div>
   </section>
@@ -236,10 +234,10 @@ h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:.02em;margin:0}
   // 地圖捲到附近才載入，不拖慢首屏
   var maps = document.querySelectorAll('.map[data-map-src]');
   function loadMap(m) {
-    if (m.firstChild) return;
+    if (m.querySelector('iframe')) return;
     var f = document.createElement('iframe');
     f.src = m.getAttribute('data-map-src'); f.loading = 'lazy'; f.title = '門市地圖'; f.referrerPolicy = 'no-referrer-when-downgrade';
-    m.appendChild(f);
+    m.insertBefore(f, m.firstChild);
   }
   if ('IntersectionObserver' in window) {
     var mo = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { loadMap(e.target); mo.unobserve(e.target); } }); }, { rootMargin: '300px' });
