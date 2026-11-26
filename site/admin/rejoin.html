@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>回流活動｜凝聚後台</title>
+<link rel="icon" href="/one/favicon.svg" type="image/svg+xml">
+<style>
+:root{--ink:#2C2B28;--paper:#F5F4F1;--sand:#EAE3D8;--bronze:#9C7A4B;--mute:#6E6A62;--ok:#4F7A4A;--bad:#B4513A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.7 "Noto Sans TC",system-ui,-apple-system,sans-serif}
+.w{max-width:760px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:22px;margin:4px 0 2px}
+h2{font-size:17px;margin:0 0 10px}
+.sub{color:var(--mute);font-size:13px;margin:0 0 20px}
+.card{background:#fff;border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 1px 0 #e6e1d8}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:var(--paper);border-radius:14px;padding:10px 12px}
+.kpi b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.kpi small{color:var(--mute);font-size:12px}
+@media (max-width:560px){.grid{grid-template-columns:repeat(2,1fr)}}
+textarea,input[type=text],input[type=number],input[type=password]{width:100%;border:1px solid #d8d2c6;border-radius:12px;padding:10px 12px;font:inherit;background:#fff}
+textarea{min-height:120px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.row input[type=number]{width:110px}
+button,.btn{border:0;border-radius:999px;padding:10px 20px;background:var(--ink);color:#fff;font:700 14px inherit;cursor:pointer;text-decoration:none;display:inline-block}
+button.o,.btn.o{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+button:disabled{opacity:.4;cursor:default}
+.msg{margin-top:10px;font-size:14px;white-space:pre-wrap}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.bar{height:8px;background:var(--sand);border-radius:999px;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;width:0;background:var(--bronze);transition:width .3s}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;background:var(--sand)}
+.pill.open{background:#DCE8D6;color:var(--ok)}.pill.soldout,.pill.ended{background:#F1D9D2;color:var(--bad)}
+.hint{color:var(--mute);font-size:13px;margin:6px 0 0}
+#login{max-width:360px;margin:15vh auto}
+</style>
+</head>
+<body>
+<div id="login" class="card" hidden>
+  <h2>凝聚後台登入</h2>
+  <input type="password" id="pw" placeholder="後台密碼" autocomplete="current-password">
+  <div class="row"><button id="loginBtn">登入</button></div>
+  <div class="msg bad" id="loginMsg"></div>
+</div>
+
+<div class="w" id="app" hidden>
+  <a href="/admin/" style="font-size:13px;color:var(--mute)">← 行銷後台</a>
+  <h1>回流活動 <span class="pill" id="state">—</span></h1>
+  <p class="sub" id="meta">讀取中…</p>
+
+  <div class="card">
+    <h2>成效</h2>
+    <div class="grid">
+      <div class="kpi"><b id="k-listed">-</b><small>名單</small></div>
+      <div class="kpi"><b id="k-sent">-</b><small>已發送</small></div>
+      <div class="kpi"><b id="k-opened">-</b><small>開啟活動頁</small></div>
+      <div class="kpi"><b id="k-clicked">-</b><small>點預約</small></div>
+      <div class="kpi"><b id="k-pending">-</b><small>待發送</small></div>
+      <div class="kpi"><b id="k-failed">-</b><small>發送失敗</small></div>
+      <div class="kpi"><b id="k-booked">-</b><small>確認預約</small></div>
+      <div class="kpi"><b id="k-matched">-</b><small>其中來自名單</small></div>
+    </div>
+    <div class="row">
+      <a class="btn o" href="/api/rejoin/report?format=csv">下載逐人明細 CSV</a>
+      <button class="o" id="refresh">重新整理</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>① 上傳名單</h2>
+    <textarea id="uids" placeholder="貼上 UID，一行一個（U 開頭、33 碼）。逗號、空白分隔也可以。"></textarea>
+    <div class="row">
+      <input type="file" id="file" accept=".txt,.csv,text/plain,text/csv">
+      <button id="upBtn">加入名單</button>
+    </div>
+    <p class="hint">重複上傳沒關係，已在名單裡的人不會重複加入。</p>
+    <div class="msg" id="upMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>② 發給自己測試</h2>
+    <input type="text" id="testUid" placeholder="你自己的 UID">
+    <div class="row"><button id="testBtn">發送測試訊息</button></div>
+    <p class="hint">收到後點進活動頁、按預約，確認整條流程。測試可以重複發。</p>
+    <div class="msg" id="testMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>③ 正式發送</h2>
+    <p class="hint" id="quota">本月額度：讀取中…</p>
+    <div class="row">
+      <span>這次發給</span><input type="number" id="n" value="100" min="1" step="1"><span>人</span>
+      <label style="font-size:13px"><input type="checkbox" id="retry"> 包含先前發送失敗的人</label>
+    </div>
+    <div class="row">
+      <button id="sendBtn">開始發送</button>
+      <button class="o" id="stopBtn" disabled>暫停</button>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+    <p class="hint">建議先發 100 人，隔半天看封鎖和點擊，再發剩下的。已發過的人會自動跳過。發送中請不要關閉這個分頁。</p>
+    <div class="msg" id="sendMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>手動扣除名額</h2>
+    <p class="hint">電話、現場等沒經過預約系統的名額，填「目前總共要扣幾位」（不是累加）。</p>
+    <div class="row"><input type="number" id="offset" min="0" step="1" style="width:110px"><button class="o" id="offBtn">儲存</button></div>
+    <div class="msg" id="offMsg"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function api(path, body) {
+    return fetch(path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin' }
+                            : { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { j._status = r.status; return j; }); });
+  }
+  function say(id, text, kind) { var e = $(id); e.textContent = text; e.className = 'msg ' + (kind || ''); }
+  var STATE = { open: '進行中', soldout: '已額滿', ended: '已截止' };
+
+  function load() {
+    return api('/api/rejoin/report').then(function (j) {
+      if (j._status === 401) { $('app').hidden = true; $('login').hidden = false; return; }
+      $('login').hidden = true; $('app').hidden = false;
+      var r = j.recipients || {}, b = j.bookings || {};
+      [['listed', r.listed], ['sent', r.sent], ['opened', r.opened], ['clicked', r.clicked], ['pending', r.pending], ['failed', r.failed],
+       ['booked', b.confirmed], ['matched', b.matched]].forEach(function (x) { $('k-' + x[0]).textContent = x[1] || 0; });
+      $('state').textContent = STATE[j.state] || j.state; $('state').className = 'pill ' + j.state;
+      var d = new Date(Date.parse(j.deadline));
+      $('meta').textContent = '截止 ' + d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false }) +
+        '｜名額 ' + j.total + '，已確認 ' + j.booked + '，手動扣除 ' + j.offset + '，剩餘 ' + j.remaining;
+      if (document.activeElement !== $('offset')) $('offset').value = j.offset;
+      return j;
+    });
+  }
+  function loadQuota() {
+    api('/api/rejoin/quota').then(function (q) {
+      if (q.error) { $('quota').textContent = '本月額度：' + q.error; return; }
+      $('quota').textContent = q.limited ? '本月額度：已用 ' + q.used + ' / ' + q.limit + '，剩 ' + q.left + ' 則' : '本月額度：不限';
+      window._left = q.limited ? q.left : Infinity;
+    });
+  }
+
+  $('loginBtn').onclick = function () {
+    api('/api/login', { password: $('pw').value }).then(function (j) {
+      if (j.ok) { load(); loadQuota(); } else say('loginMsg', j.error === 'wrong' ? '密碼錯誤' : '無法登入', 'bad');
+    });
+  };
+  $('pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('loginBtn').click(); });
+  $('refresh').onclick = function () { load(); loadQuota(); };
+
+  $('file').onchange = function () {
+    var f = this.files[0]; if (!f) return;
+    f.text().then(function (t) { $('uids').value = t; say('upMsg', '已讀入檔案，按「加入名單」送出'); });
+  };
+  $('upBtn').onclick = function () {
+    var text = $('uids').value.trim();
+    if (!text) return say('upMsg', '請先貼上 UID 或選擇檔案', 'bad');
+    $('upBtn').disabled = true; say('upMsg', '上傳中…');
+    api('/api/rejoin/upload', { text: text }).then(function (j) {
+      $('upBtn').disabled = false;
+      if (j._status !== 200) return say('upMsg', '上傳失敗：' + (j.error || j._status), 'bad');
+      say('upMsg', '新加入 ' + j.added + ' 人；已在名單 ' + j.existing + ' 人；重複 ' + j.duplicates + ' 筆；格式錯誤 ' + j.invalid + ' 筆' +
+        (j.sample_invalid && j.sample_invalid.length ? '（例如：' + j.sample_invalid.join('、') + '）' : ''), 'ok');
+      $('uids').value = ''; load();
+    });
+  };
+
+  $('testBtn').onclick = function () {
+    var uid = $('testUid').value.trim();
+    $('testBtn').disabled = true; say('testMsg', '發送中…');
+    api('/api/rejoin/test', { uid: uid }).then(function (j) {
+      $('testBtn').disabled = false;
+      if (j.ok) say('testMsg', '已發送，請到 LINE 查看。\n測試連結：' + j.link, 'ok');
+      else say('testMsg', '發送失敗：' + (j.error || j.err || j._status) + (/404|400/.test(j.err || '') ? '\n（這個 UID 可能不是官方帳號的好友，或來自不同 Provider）' : ''), 'bad');
+      load(); loadQuota();
+    });
+  };
+
+  var stopping = false;
+  $('stopBtn').onclick = function () { stopping = true; $('stopBtn').disabled = true; say('sendMsg', '這一批發完就暫停…'); };
+  $('sendBtn').onclick = function () {
+    var target = Math.max(1, Math.floor(Number($('n').value) || 0));
+    var pending = Number($('k-pending').textContent) + ($('retry').checked ? Number($('k-failed').textContent) : 0);
+    target = Math.min(target, pending);
+    if (!target) return say('sendMsg', '沒有待發送的名單', 'bad');
+    if (window._left !== undefined && target > window._left) return say('sendMsg', '額度不足：這次要發 ' + target + ' 則，本月只剩 ' + window._left + ' 則', 'bad');
+    if (!confirm('確定要發送 LINE 訊息給 ' + target + ' 人嗎？發出後無法收回。')) return;
+    stopping = false; $('sendBtn').disabled = true; $('stopBtn').disabled = false;
+    var done = 0, ok = 0, fail = 0, lastErr = '';
+    (function next() {
+      if (stopping || done >= target) return finish();
+      api('/api/rejoin/push', { n: Math.min(20, target - done), retry_failed: $('retry').checked }).then(function (j) {
+        if (j._status !== 200) { lastErr = j.error || ('HTTP ' + j._status); return finish(); }
+        var got = j.sent + j.failed;
+        ok += j.sent; fail += j.failed; done += got;
+        if (j.errors && j.errors.length) lastErr = j.errors[0];
+        $('prog').style.width = Math.round(done / target * 100) + '%';
+        say('sendMsg', '發送中… 成功 ' + ok + '、失敗 ' + fail + '／' + target);
+        if (!got || !j.pending && !$('retry').checked) return finish();
+        next();
+      }).catch(function (e) { lastErr = String(e); finish(); });
+    })();
+    function finish() {
+      $('sendBtn').disabled = false; $('stopBtn').disabled = true;
+      say('sendMsg', (stopping ? '已暫停。' : '完成。') + '成功 ' + ok + '、失敗 ' + fail + (lastErr ? '\n最近一次錯誤：' + lastErr : ''), fail || lastErr ? 'bad' : 'ok');
+      load(); loadQuota();
+    }
+  };
+
+  $('offBtn').onclick = function () {
+    api('/api/rejoin/adjust', { offset: Number($('offset').value) || 0 }).then(function (j) {
+      say('offMsg', j._status === 200 ? '已儲存：手動扣除 ' + j.offset + ' 位' : '儲存失敗', j._status === 200 ? 'ok' : 'bad'); load();
+    });
+  };
+
+  load().then(function (j) { if (j) loadQuota(); });
+  setInterval(function () { if (!$('app').hidden && document.visibilityState === 'visible' && $('sendBtn').disabled === false) load(); }, 30000);
+})();
+</script>
+</body>
+</html>

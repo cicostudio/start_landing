@@ -26,7 +26,16 @@ LINE 推播（每人一個 token）
 3. 打開 https://cico.tw/rejoin/，確認倒數和「剩餘 50 位」都有出現。
 4. **預約系統要做的三件事**（見第四節）。
 
-## 二、發送（在自己電腦上）
+## 二、發送：後台網頁（建議）
+
+1. Cloudflare 祕密再加一個 `LINE_TOKEN`：官方帳號 Messaging API 的 Channel access token（長期）
+2. 打開 https://cico.tw/admin/rejoin.html，用後台密碼登入
+3. ① 貼上或上傳 UID 名單 → ② 發給自己測試 → ③ 先發 100 人，之後再發剩下的
+   - 每批 20 人，網頁會自動連續發送；發送中不要關分頁，可以按「暫停」
+   - 已發過的人自動跳過；同一人就算重送也不會收到兩則（每人固定 retry key）
+   - 活動額滿或截止後會拒絕發送
+
+## 二之二、發送：本機腳本（選用）
 
 ```bash
 cd start_landing/tools/rejoin
