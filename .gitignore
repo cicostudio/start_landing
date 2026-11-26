@@ -1,3 +1,7 @@
 .dev.vars
 .wrangler/
 node_modules/
+
+# 回流活動推播進度（含 LINE UID，不要 commit）
+tools/rejoin/rejoin-state.json*
+tools/rejoin/*.txt

@@ -6,6 +6,7 @@
  *   POST /api/login    後台登入（單一密碼，存在 Cloudflare 祕密 ADMIN_PASSWORD）
  *   POST /api/logout
  *   GET  /api/stats    後台數據（需登入。預設截止到昨天；include_today=1 才含今天，並快取 10 分鐘）
+ *   /api/rejoin/*      回流客活動（worker/rejoin.js）
  *
  * 資料存在 Durable Object（內建 SQLite），不需要另外建資料庫。
  *
@@ -16,6 +17,7 @@
  */
 import { DurableObject } from 'cloudflare:workers';
 import { handleMcp } from './mcp.js';
+import { handleRejoin, rjMigrate, rjOps } from './rejoin.js';
 import {
   addDays, dayOf, resolveRange, rebuildDayFromDb, statsFromRollupRows, dataNote,
   TODAY_CACHE_MS, HISTORY_CACHE_MS, BACKFILL_GAP_MS,
@@ -26,10 +28,10 @@ import {
 export { dayOf };
 
 // 頁面（page_id → 網址）。新增頁面時在這裡加一行，並在 LINES 指定它屬於哪條產品線。
-const PAGES = { 'one-on-one-zh': '/one/', 'run-zh': '/run/', 'run-direct-zh': '/two/', 'three-zh': '/three/', 'central-zh': '/central/' };
+const PAGES = { 'one-on-one-zh': '/one/', 'run-zh': '/run/', 'run-direct-zh': '/two/', 'three-zh': '/three/', 'central-zh': '/central/', 'rejoin-zh': '/rejoin/' };
 // 產品線：各自的頁面與 Meta 廣告帳號（帳號編號放在 Cloudflare 變數，名稱見 acct）
 export const LINES = {
-  one:   { name: '一對一',              pages: ['one-on-one-zh', 'run-zh', 'run-direct-zh', 'three-zh', 'central-zh'], acct: 'META_AD_ACCOUNT_ID' },
+  one:   { name: '一對一',              pages: ['one-on-one-zh', 'run-zh', 'run-direct-zh', 'three-zh', 'central-zh', 'rejoin-zh'], acct: 'META_AD_ACCOUNT_ID' },
   group: { name: '團班課',              pages: [],                          acct: 'META_AD_ACCOUNT_GROUP' },
   cert:  { name: '認證課／工作坊／講座', pages: [],                          acct: 'META_AD_ACCOUNT_CERT' },
 };
@@ -60,6 +62,8 @@ export default {
       out.line = lineOf(q);
       return json(out);
     }
+    // 回流客活動（cico.tw/rejoin/）：狀態、點擊導流、預約回呼、管理（見 worker/rejoin.js）
+    if (p.startsWith('/api/rejoin/')) return handleRejoin(req, env, url, { db: store(env), json, authed, same, hmac });
     if (p.startsWith('/mcp/') || p === '/mcp') {
       // Claude 用的唯讀 MCP：網址裡帶 MCP_KEY 才能用（沒設 MCP_KEY 就關閉）
       const key = p.split('/')[2] || '';
@@ -159,6 +163,13 @@ export class Analytics extends DurableObject {
         day TEXT PRIMARY KEY, built INTEGER NOT NULL DEFAULT 0, built_at INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT);
     `);
+    rjMigrate(this.sql);
+  }
+
+  // 回流客活動的資料操作（worker/rejoin.js 的 rjOps）
+  async rj(op, arg) {
+    if (!rjOps[op]) throw new Error('unknown rejoin op ' + op);
+    return rjOps[op](this.sql, arg);
   }
 
   // 互動事件：有這些就不算跳出

@@ -62,3 +62,7 @@ LIFF 端可讀取這些參數，於預約完成時回傳 Conversions API。
 - 網址：`https://cico.tw/mcp/<MCP_KEY>`；在 Cloudflare 新增祕密 `MCP_KEY`（一長串隨機字）才會開啟。
 - 工具：`list_product_lines`、`get_marketing_report`、`get_ad_campaigns`（`worker/mcp.js`）。
 - claude.ai → 設定 → 連接器 → 新增自訂連接器，貼上上面的網址。
+
+## 回流客喚醒活動（cico.tw/rejoin/）
+
+LINE 推播 → 活動頁（倒數＋剩餘名額）→ 預約系統回呼。操作手冊見 `docs/rejoin.md`。
