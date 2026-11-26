@@ -215,8 +215,13 @@ h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:.02em;margin:0}
   if (t && /^[A-Za-z0-9]{6,16}$/.test(t)) { try { localStorage.setItem(KEY, t); } catch (e) {} }
   else { try { t = localStorage.getItem(KEY); } catch (e) { t = null; } }
 
+  // 群發（沒有 token）時，記住來源與批次（utm_medium / utm_content），帶到預約系統
+  var src = null;
+  if (q.get('utm_medium') || q.get('utm_content')) { src = { m: q.get('utm_medium') || '', c: q.get('utm_content') || '' }; try { localStorage.setItem('nj_rj_src', JSON.stringify(src)); } catch (e) {} }
+  else { try { src = JSON.parse(localStorage.getItem('nj_rj_src') || 'null'); } catch (e) {} }
   var vid = (window.NJ_ATTR && window.NJ_ATTR.vid) || '';
-  var goUrl = '/api/rejoin/go?' + (t ? 't=' + encodeURIComponent(t) + '&' : '') + 'vid=' + encodeURIComponent(vid);
+  var goUrl = '/api/rejoin/go?' + (t ? 't=' + encodeURIComponent(t) + '&' : '') + 'vid=' + encodeURIComponent(vid) +
+    (src && src.m ? '&m=' + encodeURIComponent(src.m) : '') + (src && src.c ? '&c=' + encodeURIComponent(src.c) : '');
   var books = document.querySelectorAll('.js-book');
   books.forEach(function (a) {
     a.href = goUrl;

@@ -202,8 +202,11 @@ export async function handleRejoin(req, env, url, deps) {
     const dest = new URL(c.booking);
     if (okToken(t)) dest.searchParams.set('rj', t);
     dest.searchParams.set('utm_source', 'line');
-    dest.searchParams.set('utm_medium', okToken(t) ? 'push' : 'share');
+    const m = (url.searchParams.get('m') || '').replace(/[^\w-]/g, '').slice(0, 30);
+    const ct = (url.searchParams.get('c') || '').replace(/[^\w-]/g, '').slice(0, 30);
+    dest.searchParams.set('utm_medium', okToken(t) ? 'push' : (m || 'share'));
     dest.searchParams.set('utm_campaign', c.id);
+    if (ct) dest.searchParams.set('utm_content', ct);
     dest.searchParams.set('lp', 'rejoin-zh');
     if (vid) dest.searchParams.set('vid', vid);
     return new Response(null, { status: 302, headers: { Location: dest.toString(), 'Cache-Control': 'no-store' } });
